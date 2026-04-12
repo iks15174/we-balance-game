@@ -24,8 +24,11 @@ router.post('/unlink', async (req, res) => {
   }
 
   try {
-    // 해당 유저의 모든 데이터 삭제 (현재는 User 테이블만, 추후 확장 시 추가)
-    await prisma.user.deleteMany({ where: { userKey } });
+    await Promise.all([
+      prisma.user.deleteMany({ where: { userKey } }),
+      prisma.room.deleteMany({ where: { creatorUserKey: userKey } }),
+      prisma.room.deleteMany({ where: { bUserKey: userKey } }),
+    ]);
 
     console.info(`유저 탈퇴 처리 완료: ${userKey.slice(0, 8)}...`);
     res.json({ success: true });

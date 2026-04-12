@@ -3,9 +3,11 @@ import { appLogin } from '@apps-in-toss/web-framework';
 import { api } from '../api/client';
 
 const AUTH_KEY = 'ait_user_key';
+const AUTH_NAME_KEY = 'ait_user_name';
 
 export function useAuth() {
   const [userKey, setUserKey] = useState<string | null>(() => localStorage.getItem(AUTH_KEY));
+  const [userName, setUserName] = useState<string | null>(() => localStorage.getItem(AUTH_NAME_KEY));
   const [validating, setValidating] = useState<boolean>(() => !!localStorage.getItem(AUTH_KEY));
 
   // 앱 시작 시 저장된 userKey가 유효한지 서버에서 확인 (탈퇴 후 무효화 대응)
@@ -27,19 +29,24 @@ export function useAuth() {
 
   async function login(): Promise<string> {
     const { authorizationCode, referrer } = await appLogin();
-    const { userKey: newKey } = await api.authLogin({ authorizationCode, referrer });
+    const { userKey: newKey, name } = await api.authLogin({ authorizationCode, referrer });
     localStorage.setItem(AUTH_KEY, newKey);
+    if (name) localStorage.setItem(AUTH_NAME_KEY, name);
     setUserKey(newKey);
+    setUserName(name ?? null);
     return newKey;
   }
 
   function logout() {
     localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(AUTH_NAME_KEY);
     setUserKey(null);
+    setUserName(null);
   }
 
   return {
     userKey,
+    userName,
     isLoggedIn: !!userKey,
     validating,
     login,

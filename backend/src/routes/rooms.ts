@@ -23,6 +23,7 @@ const CreateRoomSchema = z.discriminatedUnion('isCustom', [
     topicId: z.string(),
     questionIds: z.array(z.string()).min(1).max(20),
     answers: z.array(AnswerSchema).min(1),
+    userKey: z.string().optional(),
   }),
   // 커스텀 게임: 질문 내용을 서버에 스냅샷으로 저장
   z.object({
@@ -31,6 +32,7 @@ const CreateRoomSchema = z.discriminatedUnion('isCustom', [
       z.object({ text: z.string().min(1), optionA: z.string().min(1), optionB: z.string().min(1) })
     ).min(1).max(20),
     answers: z.array(AnswerSchema).min(1),
+    userKey: z.string().optional(),
   }),
 ]);
 
@@ -69,6 +71,7 @@ router.post('/', async (req, res) => {
         questionIds: data.questionIds as unknown as Prisma.InputJsonValue,
         questionsSnapshot: Prisma.JsonNull,
         aAnswers: data.answers as unknown as Prisma.InputJsonValue,
+        creatorUserKey: data.userKey ?? null,
       };
     } else {
       // 커스텀 게임: 질문에 ID 부여 후 스냅샷 저장
@@ -94,6 +97,7 @@ router.post('/', async (req, res) => {
         questionIds: Prisma.JsonNull,
         questionsSnapshot: questionsSnapshot as unknown as Prisma.InputJsonValue,
         aAnswers: data.answers as unknown as Prisma.InputJsonValue,
+        creatorUserKey: data.userKey ?? null,
       };
     }
 
@@ -108,6 +112,58 @@ router.post('/', async (req, res) => {
     res.status(201).json({ roomId: room.id, shortCode: room.shortCode });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/rooms/my?userKey=xxx — 내가 보낸/받은 초대 목록
+router.get('/my', async (req, res) => {
+  const userKey = req.query.userKey as string | undefined;
+  if (!userKey) { res.status(400).json({ error: 'userKey is required' }); return; }
+
+  const select = {
+    shortCode: true, topicId: true, isCustom: true,
+    status: true, createdAt: true, expiresAt: true,
+  };
+
+  try {
+    const [sentRooms, receivedRooms] = await Promise.all([
+      prisma.room.findMany({ where: { creatorUserKey: userKey }, orderBy: { createdAt: 'desc' }, select: { ...select, bUserKey: true } }),
+      prisma.room.findMany({ where: { bUserKey: userKey }, orderBy: { createdAt: 'desc' }, select: { ...select, creatorUserKey: true } }),
+    ]);
+
+    // 상대방 이름 일괄 조회
+    const otherKeys = [
+      ...sentRooms.map(r => r.bUserKey).filter(Boolean) as string[],
+      ...receivedRooms.map(r => r.creatorUserKey).filter(Boolean) as string[],
+    ];
+    const users = otherKeys.length
+      ? await prisma.user.findMany({ where: { userKey: { in: otherKeys } }, select: { userKey: true, name: true } })
+      : [];
+    const nameMap = new Map(users.map(u => [u.userKey, u.name]));
+
+    const sent = sentRooms.map(({ bUserKey: bk, ...r }) => ({ ...r, otherName: bk ? (nameMap.get(bk) ?? null) : null }));
+    const received = receivedRooms.map(({ creatorUserKey: ck, ...r }) => ({ ...r, otherName: ck ? (nameMap.get(ck) ?? null) : null }));
+
+    res.json({ sent, received });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/rooms/:shortCode?userKey=xxx — 내 방 삭제
+router.delete('/:shortCode', async (req, res) => {
+  const userKey = req.query.userKey as string | undefined;
+  if (!userKey) { res.status(400).json({ error: 'userKey is required' }); return; }
+
+  try {
+    const room = await prisma.room.findUnique({ where: { shortCode: req.params.shortCode } });
+    if (!room) { res.status(404).json({ error: 'Room not found' }); return; }
+    if (room.creatorUserKey !== userKey) { res.status(403).json({ error: 'Not authorized' }); return; }
+
+    await prisma.room.delete({ where: { shortCode: req.params.shortCode } });
+    res.json({ success: true });
+  } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -142,7 +198,10 @@ router.get('/:shortCode', async (req, res) => {
 
 // POST /api/rooms/:shortCode/answers — B유저 답변 제출
 router.post('/:shortCode/answers', async (req, res) => {
-  const parsed = z.object({ answers: z.array(AnswerSchema).min(1) }).safeParse(req.body);
+  const parsed = z.object({
+    answers: z.array(AnswerSchema).min(1),
+    userKey: z.string().optional(),
+  }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
 
   try {
@@ -165,7 +224,11 @@ router.post('/:shortCode/answers', async (req, res) => {
 
     await prisma.room.update({
       where: { shortCode: req.params.shortCode },
-      data: { bAnswers: parsed.data.answers as unknown as Prisma.InputJsonValue, status: 'COMPLETE' },
+      data: {
+        bAnswers: parsed.data.answers as unknown as Prisma.InputJsonValue,
+        bUserKey: parsed.data.userKey ?? null,
+        status: 'COMPLETE',
+      },
     });
 
     res.json({ success: true, bothComplete: true });

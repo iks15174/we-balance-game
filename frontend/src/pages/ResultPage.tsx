@@ -17,11 +17,20 @@ export default function ResultPage() {
   const [result, setResult] = useState<GameResult | null>(null);
   const [error, setError] = useState('');
   const [sharing, setSharing] = useState(false);
+  const [adTimedOut, setAdTimedOut] = useState(false);
 
   const { isLoaded: adLoaded, isSupported: adSupported, show: showAd } = useAd({
     adGroupId: INTERSTITIAL_AD_GROUP_ID,
     onDismissed: () => setPhase('result'),
   });
+
+  // 광고가 5초 내에 로딩되지 않으면 건너뛰기 버튼 표시
+  useEffect(() => {
+    if (phase !== 'ad') return;
+    if (adLoaded) return;
+    const timer = setTimeout(() => setAdTimedOut(true), 5000);
+    return () => clearTimeout(timer);
+  }, [phase, adLoaded]);
 
   useEffect(() => {
     if (!shortCode) { navigate('/'); return; }
@@ -93,6 +102,14 @@ export default function ResultPage() {
         >
           {adLoaded ? '광고 보고 결과 확인하기 🎁' : '광고 준비 중...'}
         </button>
+        {adTimedOut && (
+          <button
+            style={{ marginTop: 16, fontSize: 13, color: '#bbb', background: 'none', border: 'none', cursor: 'pointer' }}
+            onClick={() => setPhase('result')}
+          >
+            건너뛰기
+          </button>
+        )}
       </div>
     );
   }

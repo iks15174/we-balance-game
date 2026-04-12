@@ -1,4 +1,4 @@
-import { AnswerItem, CustomQuestion, GameResult, RoomInfo } from '../types';
+import { AnswerItem, CustomQuestion, GameResult, RoomInfo, MyRoom } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4001';
 
@@ -14,7 +14,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // 로그인: authorizationCode + referrer → userKey
-  authLogin(body: { authorizationCode: string; referrer: string }): Promise<{ userKey: string }> {
+  authLogin(body: { authorizationCode: string; referrer: string }): Promise<{ userKey: string; name: string | null }> {
     return request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(body),
@@ -31,6 +31,7 @@ export const api = {
     topicId: string;
     questionIds: string[];
     answers: AnswerItem[];
+    userKey?: string;
   }): Promise<{ roomId: string; shortCode: string }> {
     return request('/api/rooms', {
       method: 'POST',
@@ -42,6 +43,7 @@ export const api = {
   createCustomRoom(body: {
     customQuestions: CustomQuestion[];
     answers: AnswerItem[];
+    userKey?: string;
   }): Promise<{ roomId: string; shortCode: string }> {
     return request('/api/rooms', {
       method: 'POST',
@@ -53,14 +55,24 @@ export const api = {
     return request(`/api/rooms/${shortCode}`);
   },
 
-  submitBAnswers(shortCode: string, answers: AnswerItem[]): Promise<{ success: boolean }> {
+  submitBAnswers(shortCode: string, answers: AnswerItem[], userKey?: string): Promise<{ success: boolean }> {
     return request(`/api/rooms/${shortCode}/answers`, {
       method: 'POST',
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, userKey }),
     });
   },
 
   getResult(shortCode: string): Promise<GameResult> {
     return request(`/api/rooms/${shortCode}/result`);
+  },
+
+  getMyRooms(userKey: string): Promise<{ sent: MyRoom[]; received: MyRoom[] }> {
+    return request(`/api/rooms/my?userKey=${encodeURIComponent(userKey)}`);
+  },
+
+  deleteRoom(shortCode: string, userKey: string): Promise<{ success: boolean }> {
+    return request(`/api/rooms/${shortCode}?userKey=${encodeURIComponent(userKey)}`, {
+      method: 'DELETE',
+    });
   },
 };

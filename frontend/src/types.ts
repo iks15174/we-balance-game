@@ -36,6 +36,16 @@ export interface ResultDetail {
   isMatch: boolean;
 }
 
+export interface MyRoom {
+  shortCode: string;
+  topicId: string | null;
+  isCustom: boolean;
+  status: 'WAITING_B' | 'COMPLETE';
+  createdAt: string;
+  expiresAt: string;
+  otherName: string | null;
+}
+
 export interface GameResult {
   ready: boolean;
   isCustom: boolean;

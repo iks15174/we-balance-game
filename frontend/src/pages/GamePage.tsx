@@ -4,12 +4,14 @@ import { api } from '../api/client';
 import { AnswerItem, CustomQuestion } from '../types';
 import { TopicQuestion, getQuestionById, getTopicById, pickRandomQuestions } from '../data/topics';
 import BalanceCard from '../components/BalanceCard';
+import { useAuth } from '../hooks/useAuth';
 
 const QUESTIONS_PER_GAME = 5;
 
 export default function GamePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { userKey } = useAuth();
   const topicId = searchParams.get('topicId');
   const shortCode = searchParams.get('shortCode'); // B유저 진입 시
   const isCustom = searchParams.get('custom') === 'true';
@@ -67,10 +69,7 @@ export default function GamePage() {
   }
 
   function handleNext() {
-    if (!answers.has(questions[currentIndex].id)) {
-      alert('선택지를 골라주세요!');
-      return;
-    }
+    if (!answers.has(questions[currentIndex].id)) return;
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(i => i + 1);
     } else {
@@ -98,20 +97,21 @@ export default function GamePage() {
             optionA: q.optionA,
             optionB: q.optionB,
           }));
-          const { shortCode: code } = await api.createCustomRoom({ customQuestions, answers: answerItems });
+          const { shortCode: code } = await api.createCustomRoom({ customQuestions, answers: answerItems, userKey: userKey ?? undefined });
           sessionStorage.removeItem('customQuestions');
-          navigate(`/invite/${code}`);
+          navigate(`/invite/${code}`, { replace: true });
         } else {
           const { shortCode: code } = await api.createRoom({
             topicId: topicId!,
             questionIds: questions.map(q => q.id),
             answers: answerItems,
+            userKey: userKey ?? undefined,
           });
-          navigate(`/invite/${code}`);
+          navigate(`/invite/${code}`, { replace: true });
         }
       } else {
-        await api.submitBAnswers(shortCode!, answerItems);
-        navigate(`/waiting/${shortCode}?role=B`);
+        await api.submitBAnswers(shortCode!, answerItems, userKey ?? undefined);
+        navigate(`/waiting/${shortCode}?role=B`, { replace: true });
       }
     } catch {
       setError('제출 중 오류가 발생했어요. 다시 시도해 주세요.');
@@ -129,8 +129,17 @@ export default function GamePage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.roleBar}>
-        {role === 'A' ? '내가 먼저 풀고 초대장을 보낼게요' : '친구가 보낸 초대에 답해봐요'}
+      <div style={styles.topBar}>
+        <button
+          style={{ ...styles.prevBtn, visibility: currentIndex === 0 ? 'hidden' : 'visible' }}
+          onClick={handlePrev}
+        >
+          ‹
+        </button>
+        <span style={styles.roleText}>
+          {role === 'A' ? '내 답변 먼저 작성하기' : '친구 초대에 답하기'}
+        </span>
+        <div style={{ width: 36 }} />
       </div>
 
       <BalanceCard
@@ -139,23 +148,12 @@ export default function GamePage() {
         total={questions.length}
         selected={selected}
         onSelect={handleSelect}
+        onAutoAdvance={handleNext}
       />
 
-      <div style={styles.navRow}>
-        <button
-          style={{ ...styles.navBtn, visibility: currentIndex === 0 ? 'hidden' : 'visible' }}
-          onClick={handlePrev}
-        >
-          ‹ 이전
-        </button>
-        <button
-          style={{ ...styles.nextBtn, ...(selected === null ? styles.nextBtnDisabled : {}) }}
-          onClick={handleNext}
-          disabled={submitting}
-        >
-          {submitting ? '제출 중...' : isLast ? '완료!' : '다음 ›'}
-        </button>
-      </div>
+      {submitting && (
+        <div style={styles.submittingBar}>제출 중...</div>
+      )}
     </div>
   );
 }
@@ -178,24 +176,20 @@ function CenterScreen({
 
 const styles: Record<string, React.CSSProperties> = {
   container: { minHeight: '100dvh', backgroundColor: '#f4f4f4', display: 'flex', flexDirection: 'column' },
-  roleBar: {
-    backgroundColor: '#FFC500', padding: '10px 16px',
-    fontSize: 13, fontWeight: 600, color: '#111', textAlign: 'center',
-  },
-  navRow: {
+  topBar: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '20px 16px', marginTop: 'auto',
+    padding: '12px 16px', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0',
   },
-  navBtn: {
-    padding: '12px 20px', borderRadius: 12, border: '1.5px solid #ddd',
-    backgroundColor: '#fff', fontSize: 15, color: '#555', cursor: 'pointer',
+  prevBtn: {
+    width: 36, height: 36, borderRadius: 10, border: '1.5px solid #eee',
+    backgroundColor: '#fff', fontSize: 20, color: '#555', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  nextBtn: {
-    padding: '12px 28px', borderRadius: 12, border: 'none',
-    backgroundColor: '#FFC500', fontSize: 15, fontWeight: 700,
-    color: '#111', cursor: 'pointer', minWidth: 120,
+  roleText: { fontSize: 13, fontWeight: 600, color: '#888' },
+  submittingBar: {
+    textAlign: 'center', padding: '16px', fontSize: 14,
+    color: '#999', marginTop: 'auto',
   },
-  nextBtnDisabled: { backgroundColor: '#ddd', color: '#999', cursor: 'not-allowed' },
   center: {
     minHeight: '100dvh', display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center',

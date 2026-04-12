@@ -43,7 +43,7 @@ export default function HomePage() {
   }
 
   function handleTopicSelect(topicId: string) {
-    navigate(`/game?topicId=${topicId}`);
+    navigate(`/intro?topicId=${topicId}`);
   }
 
   function handleCustomGame() {
@@ -66,7 +66,6 @@ export default function HomePage() {
   if (validating || loginLoading) {
     return (
       <div style={styles.center}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🎮</div>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 6 }}>
           우리사이 밸런스 게임
         </p>
@@ -78,13 +77,17 @@ export default function HomePage() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <div style={styles.headerEmoji}>🎮</div>
         <h1 style={styles.title}>우리사이 밸런스 게임</h1>
-        <p style={styles.subtitle}>친구에게 초대장을 보내고<br />둘이 같이 답해봐요!</p>
+        <p style={styles.subtitle}>주제를 골라 초대 코드를 만들고<br />친구와 함께 케미를 확인해봐요</p>
       </div>
 
       <div style={styles.section}>
-        <p style={styles.sectionLabel}>테마 선택</p>
+        <div style={styles.sectionHeader}>
+          <p style={styles.sectionLabel}>테마 선택</p>
+          <button style={styles.myRoomsLink} onClick={() => navigate('/my-rooms')}>
+            내가 만든 방 →
+          </button>
+        </div>
         <div style={styles.topicGrid}>
           {TOPICS_DATA.map((topic) => (
             <button key={topic.id} style={styles.topicCard} onClick={() => handleTopicSelect(topic.id)}>
@@ -117,19 +120,24 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center',
   },
   header: {
-    backgroundColor: '#fff', padding: '32px 24px 28px',
+    backgroundColor: '#fff', padding: '28px 24px 24px',
     textAlign: 'center', borderBottom: '1px solid #f0f0f0',
   },
-  headerEmoji: { fontSize: 40, marginBottom: 8 },
   title: { fontSize: 22, fontWeight: 700, color: '#111', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#666', lineHeight: 1.6 },
-  section: { padding: '24px 16px 0' },
-  sectionLabel: { fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 12, paddingLeft: 4 },
-  topicGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  section: { padding: '20px 16px 0' },
+  sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingLeft: 4 },
+  sectionLabel: { fontSize: 13, fontWeight: 600, color: '#888' },
+  myRoomsLink: {
+    fontSize: 13, color: '#FFC500', fontWeight: 600,
+    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+  },
+  topicGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   topicCard: {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-    backgroundColor: '#fff', borderRadius: 16, padding: '20px 16px',
+    backgroundColor: '#fff', borderRadius: 16, padding: '18px 14px',
     border: '1.5px solid #f0f0f0', cursor: 'pointer', textAlign: 'left',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
   },
   topicEmoji: { fontSize: 28, marginBottom: 8 },
   topicName: { fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 },

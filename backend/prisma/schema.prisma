@@ -45,8 +45,13 @@ model Room {
   aAnswers          Json?
   bAnswers          Json?
   status            RoomStatus @default(WAITING_B)
+  creatorUserKey    String?    // A 유저 (초대 보낸 사람)
+  bUserKey          String?    // B 유저 (초대 받은 사람)
   createdAt         DateTime   @default(now())
   expiresAt         DateTime
+
+  @@index([creatorUserKey])
+  @@index([bUserKey])
 }
 
 enum RoomStatus {
@@ -59,5 +64,6 @@ enum RoomStatus {
 model User {
   id        String   @id @default(cuid())
   userKey   String   @unique
+  name      String?
   createdAt DateTime @default(now())
 }

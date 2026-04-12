@@ -1,5 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import TopicIntroPage from './pages/TopicIntroPage';
+import MyRoomsPage from './pages/MyRoomsPage';
 import GamePage from './pages/GamePage';
 import CustomGamePage from './pages/CustomGamePage';
 import InvitePage from './pages/InvitePage';
@@ -12,6 +14,7 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/intro" element={<TopicIntroPage />} />
         <Route path="/game" element={<GamePage />} />
         <Route path="/custom" element={<CustomGamePage />} />
         <Route path="/invite/:shortCode" element={<InvitePage />} />
@@ -20,6 +23,7 @@ export default function App() {
         <Route path="/join" element={<JoinPage />} />
         <Route path="/waiting/:shortCode" element={<WaitingPage />} />
         <Route path="/result/:shortCode" element={<ResultPage />} />
+        <Route path="/my-rooms" element={<MyRoomsPage />} />
       </Routes>
     </HashRouter>
   );

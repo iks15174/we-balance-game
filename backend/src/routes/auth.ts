@@ -22,15 +22,15 @@ router.post('/login', async (req, res) => {
   try {
     const { authorizationCode, referrer } = parsed.data;
     const { accessToken } = await generateAccessToken(authorizationCode, referrer);
-    const { userKey } = await getLoginMe(accessToken);
+    const { userKey, name } = await getLoginMe(accessToken);
 
     await prisma.user.upsert({
       where: { userKey },
-      create: { userKey },
-      update: {},
+      create: { userKey, name },
+      update: { name },   // 이름이 바뀌는 경우를 대비해 매번 갱신
     });
 
-    res.json({ userKey });
+    res.json({ userKey, name });
   } catch (err) {
     console.error('로그인 오류:', err);
     res.status(500).json({ error: '로그인에 실패했어요.' });
