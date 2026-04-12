@@ -65,7 +65,16 @@ export default function GamePage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSelect(choice: 'A' | 'B') {
-    setAnswers(prev => new Map(prev).set(questions[currentIndex].id, choice));
+    if (answers.has(questions[currentIndex].id)) return; // 이미 선택한 문제 재클릭 무시
+    const newAnswers = new Map(answers).set(questions[currentIndex].id, choice);
+    setAnswers(newAnswers);
+    setTimeout(() => {
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex(i => i + 1);
+      } else {
+        handleSubmitWithAnswers(newAnswers);
+      }
+    }, 400);
   }
 
   function handleNext() {
@@ -82,10 +91,14 @@ export default function GamePage() {
   }
 
   async function handleSubmit() {
+    handleSubmitWithAnswers(answers);
+  }
+
+  async function handleSubmitWithAnswers(finalAnswers: Map<string, 'A' | 'B'>) {
     setSubmitting(true);
     const answerItems: AnswerItem[] = questions.map(q => ({
       questionId: q.id,
-      choice: answers.get(q.id)!,
+      choice: finalAnswers.get(q.id)!,
     }));
 
     try {
@@ -148,7 +161,6 @@ export default function GamePage() {
         total={questions.length}
         selected={selected}
         onSelect={handleSelect}
-        onAutoAdvance={handleNext}
       />
 
       {submitting && (

@@ -6,16 +6,9 @@ interface Props {
   total: number;
   selected: 'A' | 'B' | null;
   onSelect: (choice: 'A' | 'B') => void;
-  onAutoAdvance?: () => void;
 }
 
-export default function BalanceCard({ question, currentIndex, total, selected, onSelect, onAutoAdvance }: Props) {
-  function handleSelect(choice: 'A' | 'B') {
-    onSelect(choice);
-    if (onAutoAdvance) {
-      setTimeout(onAutoAdvance, 400);
-    }
-  }
+export default function BalanceCard({ question, currentIndex, total, selected, onSelect }: Props) {
   return (
     <div style={styles.container}>
       <div style={styles.progress}>
@@ -37,7 +30,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
             ...styles.optionBtn,
             ...(selected === 'A' ? styles.optionSelected : {}),
           }}
-          onClick={() => handleSelect('A')}
+          onClick={() => onSelect('A')}
         >
           <span style={styles.optionLabel}>A</span>
           <span style={styles.optionText}>{question.optionA}</span>
@@ -52,7 +45,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
             ...styles.optionBtn,
             ...(selected === 'B' ? styles.optionSelected : {}),
           }}
-          onClick={() => handleSelect('B')}
+          onClick={() => onSelect('B')}
         >
           <span style={styles.optionLabel}>B</span>
           <span style={styles.optionText}>{question.optionB}</span>
