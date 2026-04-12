@@ -14,6 +14,7 @@ export default function WaitingPage() {
 
   const [dots, setDots] = useState('.');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const navigatedRef = useRef(false); // 중복 navigate 방지
 
   // 애니메이션 점
   useEffect(() => {
@@ -28,11 +29,14 @@ export default function WaitingPage() {
     if (!shortCode) return;
 
     async function check() {
+      if (navigatedRef.current) return;
       try {
         const room = await api.getRoom(shortCode!);
         if (room.status === 'COMPLETE') {
+          navigatedRef.current = true;
           clearInterval(intervalRef.current!);
-          navigate(`/result/${shortCode}`);
+          // replace: true → 결과 화면에서 뒤로가기 시 WaitingPage로 돌아오지 않음
+          navigate(`/result/${shortCode}`, { replace: true });
         }
       } catch {
         // 에러 무시, 계속 폴링
@@ -45,7 +49,6 @@ export default function WaitingPage() {
   }, [shortCode, navigate]);
 
   async function handlePingA() {
-    // B가 A에게 "다 풀었어!" 메시지 보내기
     try {
       const link = await getTossShareLink(`intoss://${APP_NAME}/result/${shortCode}`);
       await share({ message: link });
@@ -97,7 +100,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
   },
   content: { width: '100%', maxWidth: 340, textAlign: 'center' },
-  animEmoji: { fontSize: 56, marginBottom: 20, animation: 'bounce 1s infinite alternate' },
+  animEmoji: { fontSize: 56, marginBottom: 20 },
   title: { fontSize: 20, fontWeight: 700, color: '#111', marginBottom: 10 },
   desc: { fontSize: 14, color: '#888', lineHeight: 1.6, marginBottom: 28 },
   pingBtn: {
@@ -113,7 +116,5 @@ const styles: Record<string, React.CSSProperties> = {
   waitDot: {
     width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4CAF50',
     display: 'inline-block',
-    boxShadow: '0 0 0 0 rgba(76,175,80,0.4)',
-    animation: 'pulse 1.5s ease-in-out infinite',
   },
 };

@@ -32,7 +32,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
           }}
           onClick={() => onSelect('A')}
         >
-          <span style={styles.optionLabel}>A</span>
+          <span style={{ ...styles.optionLabel, ...(selected === 'A' ? styles.optionLabelSelected : {}) }}>A</span>
           <span style={styles.optionText}>{question.optionA}</span>
         </button>
 
@@ -47,7 +47,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
           }}
           onClick={() => onSelect('B')}
         >
-          <span style={styles.optionLabel}>B</span>
+          <span style={{ ...styles.optionLabel, ...(selected === 'B' ? styles.optionLabelSelected : {}) }}>B</span>
           <span style={styles.optionText}>{question.optionB}</span>
         </button>
       </div>
@@ -62,7 +62,7 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1, height: 6, backgroundColor: '#eee', borderRadius: 3, overflow: 'hidden',
   },
   progressFill: {
-    height: '100%', backgroundColor: '#FFC500', borderRadius: 3,
+    height: '100%', backgroundColor: '#3182F6', borderRadius: 3,
     transition: 'width 0.3s ease',
   },
   progressText: { fontSize: 13, color: '#999', whiteSpace: 'nowrap' },
@@ -81,15 +81,18 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
   },
   optionSelected: {
-    borderColor: '#FFC500',
-    backgroundColor: '#FFFBEB',
+    borderColor: '#3182F6',
+    backgroundColor: '#EBF3FF',
   },
   optionLabel: {
     width: 32, height: 32, borderRadius: '50%',
-    backgroundColor: '#FFC500', color: '#111',
+    backgroundColor: '#eee', color: '#888',
     fontWeight: 700, fontSize: 14,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink: 0, transition: 'background-color 0.15s, color 0.15s',
+  },
+  optionLabelSelected: {
+    backgroundColor: '#3182F6', color: '#fff',
   },
   optionText: { fontSize: 15, color: '#222', fontWeight: 500, lineHeight: 1.4 },
   vsWrap: { display: 'flex', justifyContent: 'center', padding: '6px 0' },

@@ -12,7 +12,6 @@ export default function InvitePage() {
       const link = await getTossShareLink(`intoss://${APP_NAME}/join/${shortCode}`);
       await share({ message: link });
     } catch {
-      // share 미지원 환경 폴백: 클립보드 복사
       try {
         const deepLink = `intoss://${APP_NAME}/join/${shortCode}`;
         await navigator.clipboard.writeText(deepLink);
@@ -44,7 +43,8 @@ export default function InvitePage() {
           카카오톡으로 초대장 보내기
         </button>
 
-        <button style={styles.waitBtn} onClick={() => navigate(`/waiting/${shortCode}?role=A`)}>
+        {/* replace: true → 결과 화면에서 뒤로가기 시 홈으로 이동 */}
+        <button style={styles.waitBtn} onClick={() => navigate(`/waiting/${shortCode}?role=A`, { replace: true })}>
           친구 기다리기
         </button>
 
@@ -68,10 +68,10 @@ const styles: Record<string, React.CSSProperties> = {
   desc: { fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 28 },
   codeCard: {
     backgroundColor: '#fff', borderRadius: 20, padding: '20px 24px',
-    marginBottom: 20, border: '2px solid #FFC500',
+    marginBottom: 20, border: '2px solid #3182F6',
   },
   codeLabel: { fontSize: 12, color: '#999', marginBottom: 6 },
-  code: { fontSize: 36, fontWeight: 900, color: '#FFC500', letterSpacing: 6, marginBottom: 6 },
+  code: { fontSize: 36, fontWeight: 900, color: '#3182F6', letterSpacing: 6, marginBottom: 6 },
   codeHint: { fontSize: 11, color: '#bbb' },
   shareBtn: {
     width: '100%', padding: '16px 20px', borderRadius: 16, border: 'none',

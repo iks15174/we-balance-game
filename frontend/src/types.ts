@@ -53,5 +53,7 @@ export interface GameResult {
   grade: { label: string; description: string };
   matchCount: number;
   totalCount: number;
+  aName: string | null;
+  bName: string | null;
   details: ResultDetail[];
 }

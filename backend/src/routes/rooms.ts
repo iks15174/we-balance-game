@@ -283,6 +283,13 @@ router.get('/:shortCode/result', async (req, res) => {
 
     const matchPercent = Math.round((matchCount / questionIds.length) * 100);
 
+    // 참여자 이름 조회
+    const userKeys = [room.creatorUserKey, room.bUserKey].filter(Boolean) as string[];
+    const users = userKeys.length
+      ? await prisma.user.findMany({ where: { userKey: { in: userKeys } }, select: { userKey: true, name: true } })
+      : [];
+    const nameMap = new Map(users.map(u => [u.userKey, u.name]));
+
     res.json({
       ready: true,
       isCustom: room.isCustom,
@@ -290,6 +297,8 @@ router.get('/:shortCode/result', async (req, res) => {
       grade: getGrade(matchPercent),
       matchCount,
       totalCount: questionIds.length,
+      aName: room.creatorUserKey ? (nameMap.get(room.creatorUserKey) ?? null) : null,
+      bName: room.bUserKey ? (nameMap.get(room.bUserKey) ?? null) : null,
       details,
     });
   } catch (err) {

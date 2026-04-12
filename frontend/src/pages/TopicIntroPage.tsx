@@ -76,7 +76,7 @@ const styles: Record<string, React.CSSProperties> = {
   step: { display: 'flex', alignItems: 'flex-start', gap: 14 },
   stepNum: {
     width: 28, height: 28, borderRadius: '50%',
-    backgroundColor: '#FFC500', color: '#111',
+    backgroundColor: '#3182F6', color: '#fff',
     fontWeight: 700, fontSize: 14,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
@@ -94,8 +94,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   startBtn: {
     width: '100%', padding: 15, borderRadius: 14, border: 'none',
-    backgroundColor: '#FFC500', fontSize: 16, fontWeight: 700,
-    color: '#111', cursor: 'pointer',
+    backgroundColor: '#3182F6', fontSize: 16, fontWeight: 700,
+    color: '#fff', cursor: 'pointer',
   },
   backBtn: {
     width: '100%', padding: 12, borderRadius: 14, border: 'none',

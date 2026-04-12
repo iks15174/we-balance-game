@@ -66,13 +66,13 @@ export default function MyRoomsPage() {
           style={{ ...styles.tab, ...(tab === 'sent' ? styles.tabActive : {}) }}
           onClick={() => setTab('sent')}
         >
-          내가 보낸 초대 {sent.length > 0 && <span style={styles.badge}>{sent.length}</span>}
+          보낸 초대 {sent.length > 0 && <span style={styles.badge}>{sent.length}</span>}
         </button>
         <button
           style={{ ...styles.tab, ...(tab === 'received' ? styles.tabActive : {}) }}
           onClick={() => setTab('received')}
         >
-          내가 받은 초대 {received.length > 0 && <span style={styles.badge}>{received.length}</span>}
+          받은 초대 {received.length > 0 && <span style={styles.badge}>{received.length}</span>}
         </button>
       </div>
 
@@ -83,7 +83,7 @@ export default function MyRoomsPage() {
             {tab === 'sent' ? '아직 보낸 초대가 없어요' : '아직 받은 초대가 없어요'}
           </p>
           {tab === 'sent' && (
-            <button style={styles.startBtn} onClick={() => navigate('/')}>게임 시작하기</button>
+            <button style={styles.startBtn} onClick={() => navigate('/')}>시작하기</button>
           )}
         </div>
       ) : (
@@ -122,47 +122,63 @@ function RoomCard({
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
-  const directionLabel = isSent
-    ? (room.otherName ? `→ ${room.otherName}` : '내가 초대함')
-    : (room.otherName ? `← ${room.otherName}` : '초대받음');
+  const otherName = room.otherName;
+  const relationLabel = isSent
+    ? (otherName ? `→ ${otherName}` : '→ 친구 초대')
+    : (otherName ? `← ${otherName}` : '← 받은 초대');
+
   const tapHint = isExpired ? null
-    : isComplete ? '탭하면 결과 보기 →'
-    : isSent ? '탭하면 초대 화면 →'
+    : isComplete ? '탭해서 결과 보기 →'
+    : isSent ? '탭해서 초대 화면 →'
     : null;
 
   return (
     <div style={styles.card}>
-      <button style={styles.cardMain} onClick={isExpired ? undefined : onTap} disabled={isExpired}>
+      <button
+        style={{ ...styles.cardBtn, opacity: isExpired ? 0.5 : 1 }}
+        onClick={isExpired ? undefined : onTap}
+        disabled={isExpired}
+      >
+        {/* 상단: 방향 레이블 + 상태 뱃지 */}
         <div style={styles.cardTop}>
-          <div style={styles.topLeft}>
-            <span style={styles.dirTag}>{directionLabel}</span>
-            <span style={styles.topicLabel}>{topicLabel}</span>
-          </div>
+          <span style={styles.relationLabel}>{relationLabel}</span>
           <StatusBadge isComplete={isComplete} isExpired={isExpired} />
         </div>
-        <div style={styles.cardBottom}>
+
+        {/* 주제 */}
+        <div style={styles.topicRow}>
+          <span style={styles.topicLabel}>{topicLabel}</span>
+        </div>
+
+        {/* 초대 코드 */}
+        <div style={styles.codeRow}>
           <span style={styles.shortCode}>{room.shortCode}</span>
           <span style={styles.date}>{dateStr}</span>
         </div>
+
         {tapHint && <p style={styles.tapHint}>{tapHint}</p>}
       </button>
+
+      {/* 삭제 버튼 - 카드 하단에 구분선 후 표시 */}
       {onDelete && (
-        <button
-          style={{ ...styles.deleteBtn, opacity: deleting ? 0.5 : 1 }}
-          onClick={onDelete}
-          disabled={deleting}
-        >
-          {deleting ? '...' : '삭제'}
-        </button>
+        <div style={styles.deleteRow}>
+          <button
+            style={{ ...styles.deleteBtn, opacity: deleting ? 0.4 : 1 }}
+            onClick={onDelete}
+            disabled={deleting}
+          >
+            {deleting ? '삭제 중...' : '초대 삭제'}
+          </button>
+        </div>
       )}
     </div>
   );
 }
 
 function StatusBadge({ isComplete, isExpired }: { isComplete: boolean; isExpired: boolean }) {
-  if (isExpired) return <span style={{ ...styles.statusBadge, backgroundColor: '#eee', color: '#999' }}>만료</span>;
+  if (isExpired) return <span style={{ ...styles.statusBadge, backgroundColor: '#f0f0f0', color: '#aaa' }}>만료</span>;
   if (isComplete) return <span style={{ ...styles.statusBadge, backgroundColor: '#E8F5E9', color: '#2E7D32' }}>완료 ✅</span>;
-  return <span style={{ ...styles.statusBadge, backgroundColor: '#FFF8E1', color: '#F57F17' }}>대기 중 ⏳</span>;
+  return <span style={{ ...styles.statusBadge, backgroundColor: '#EBF3FF', color: '#3182F6' }}>대기 중</span>;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -182,29 +198,35 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#bbb', background: 'none', border: 'none', borderBottom: '2px solid transparent',
     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   },
-  tabActive: { color: '#111', borderBottom: '2px solid #FFC500' },
+  tabActive: { color: '#3182F6', borderBottom: '2px solid #3182F6' },
   badge: {
-    backgroundColor: '#FFC500', color: '#111', fontSize: 11, fontWeight: 700,
+    backgroundColor: '#3182F6', color: '#fff', fontSize: 11, fontWeight: 700,
     borderRadius: 10, padding: '1px 6px',
   },
   list: { padding: '12px 16px 0' },
   card: {
-    backgroundColor: '#fff', borderRadius: 16, marginBottom: 10,
-    overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', display: 'flex',
+    backgroundColor: '#fff', borderRadius: 18, marginBottom: 12,
+    overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
   },
-  cardMain: { flex: 1, padding: '14px 16px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' },
-  cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  topLeft: { display: 'flex', flexDirection: 'column', gap: 2 },
-  dirTag: { fontSize: 11, color: '#aaa', fontWeight: 500 },
-  topicLabel: { fontSize: 15, fontWeight: 700, color: '#111' },
-  statusBadge: { fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, flexShrink: 0 },
-  cardBottom: { display: 'flex', alignItems: 'center', gap: 10 },
-  shortCode: { fontSize: 18, fontWeight: 800, color: '#FFC500', letterSpacing: 3 },
+  cardBtn: {
+    width: '100%', padding: '18px 20px', textAlign: 'left',
+    background: 'none', border: 'none', cursor: 'pointer',
+  },
+  cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  relationLabel: { fontSize: 13, fontWeight: 700, color: '#3182F6' },
+  statusBadge: { fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, flexShrink: 0 },
+  topicRow: { marginBottom: 10 },
+  topicLabel: { fontSize: 17, fontWeight: 700, color: '#111' },
+  codeRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  shortCode: { fontSize: 22, fontWeight: 900, color: '#3182F6', letterSpacing: 4 },
   date: { fontSize: 12, color: '#ccc' },
-  tapHint: { fontSize: 11, color: '#ccc', marginTop: 6 },
+  tapHint: { fontSize: 11, color: '#bbb', marginTop: 8 },
+  deleteRow: {
+    borderTop: '1px solid #f5f5f5', padding: '0',
+  },
   deleteBtn: {
-    padding: '0 16px', background: 'none', border: 'none',
-    borderLeft: '1px solid #f0f0f0', fontSize: 13, color: '#FF4444', cursor: 'pointer', flexShrink: 0,
+    width: '100%', padding: '12px 20px', background: 'none', border: 'none',
+    fontSize: 13, color: '#FF4444', cursor: 'pointer', textAlign: 'left',
   },
   empty: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -214,6 +236,6 @@ const styles: Record<string, React.CSSProperties> = {
   emptyText: { fontSize: 15, color: '#999', marginBottom: 24 },
   startBtn: {
     padding: '14px 32px', borderRadius: 14, border: 'none',
-    backgroundColor: '#FFC500', fontSize: 15, fontWeight: 700, color: '#111', cursor: 'pointer',
+    backgroundColor: '#3182F6', fontSize: 15, fontWeight: 700, color: '#fff', cursor: 'pointer',
   },
 };
