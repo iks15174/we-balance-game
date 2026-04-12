@@ -1,0 +1,119 @@
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { share, getTossShareLink } from '@apps-in-toss/web-framework';
+import { api } from '../api/client';
+
+const APP_NAME = import.meta.env.VITE_APP_NAME ?? 'we-balance-game';
+const POLL_INTERVAL = 5000; // 5초마다 폴링
+
+export default function WaitingPage() {
+  const { shortCode } = useParams<{ shortCode: string }>();
+  const [searchParams] = useSearchParams();
+  const role = searchParams.get('role') as 'A' | 'B';
+  const navigate = useNavigate();
+
+  const [dots, setDots] = useState('.');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 애니메이션 점
+  useEffect(() => {
+    const t = setInterval(() => {
+      setDots((d) => (d.length >= 3 ? '.' : d + '.'));
+    }, 600);
+    return () => clearInterval(t);
+  }, []);
+
+  // 결과 폴링 (양쪽 완료 여부 확인)
+  useEffect(() => {
+    if (!shortCode) return;
+
+    async function check() {
+      try {
+        const room = await api.getRoom(shortCode!);
+        if (room.status === 'COMPLETE') {
+          clearInterval(intervalRef.current!);
+          navigate(`/result/${shortCode}`);
+        }
+      } catch {
+        // 에러 무시, 계속 폴링
+      }
+    }
+
+    check();
+    intervalRef.current = setInterval(check, POLL_INTERVAL);
+    return () => clearInterval(intervalRef.current!);
+  }, [shortCode, navigate]);
+
+  async function handlePingA() {
+    // B가 A에게 "다 풀었어!" 메시지 보내기
+    try {
+      const link = await getTossShareLink(`intoss://${APP_NAME}/result/${shortCode}`);
+      await share({ message: link });
+    } catch {
+      try {
+        const deepLink = `intoss://${APP_NAME}/result/${shortCode}`;
+        await navigator.clipboard.writeText(deepLink);
+        alert('링크가 복사됐어요! 친구에게 보내세요.');
+      } catch {
+        alert('친구에게 알려주세요!');
+      }
+    }
+  }
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.content}>
+        <div style={styles.animEmoji}>🔍</div>
+        <h2 style={styles.title}>
+          {role === 'A'
+            ? `친구가 답변 중이에요${dots}`
+            : `케미 분석 중이에요${dots}`}
+        </h2>
+        <p style={styles.desc}>
+          {role === 'A'
+            ? '친구가 다 풀면 자동으로 결과 화면으로 이동해요'
+            : '잠시 후 결과가 나와요!'}
+        </p>
+
+        {role === 'B' && (
+          <button style={styles.pingBtn} onClick={handlePingA}>
+            <span>💬</span>
+            친구에게 "다 풀었어!" 알려주기
+          </button>
+        )}
+
+        <div style={styles.waitInfo}>
+          <span style={styles.waitDot} />
+          실시간 확인 중
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    minHeight: '100dvh', backgroundColor: '#f4f4f4',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+  },
+  content: { width: '100%', maxWidth: 340, textAlign: 'center' },
+  animEmoji: { fontSize: 56, marginBottom: 20, animation: 'bounce 1s infinite alternate' },
+  title: { fontSize: 20, fontWeight: 700, color: '#111', marginBottom: 10 },
+  desc: { fontSize: 14, color: '#888', lineHeight: 1.6, marginBottom: 28 },
+  pingBtn: {
+    width: '100%', padding: '16px 20px', borderRadius: 16, border: 'none',
+    backgroundColor: '#FEE500', fontSize: 15, fontWeight: 700, color: '#3C1E1E',
+    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 8, marginBottom: 20,
+  },
+  waitInfo: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 6, fontSize: 13, color: '#aaa',
+  },
+  waitDot: {
+    width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4CAF50',
+    display: 'inline-block',
+    boxShadow: '0 0 0 0 rgba(76,175,80,0.4)',
+    animation: 'pulse 1.5s ease-in-out infinite',
+  },
+};

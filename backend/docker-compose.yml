@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: couple_balance_game
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    ports:
+      - '8080:8080'
+    environment:
+      # 로컬에서도 gdpworldcup DB + balance 스키마 사용 (GCP와 동일 구조)
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/gdpworldcup?schema=balance
+      ADMIN_SECRET_KEY: local-dev-secret
+    depends_on:
+      - db
+    command: sh -c "npx prisma migrate deploy && node dist/app.js"
+
+volumes:
+  pgdata:

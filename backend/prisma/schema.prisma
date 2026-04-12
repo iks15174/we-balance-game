@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Topic {
+  id          String     @id @default(cuid())
+  name        String
+  emoji       String
+  description String?
+  imageUrl    String?
+  order       Int        @default(0)
+  isActive    Boolean    @default(true)
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Question {
+  id       String  @id @default(cuid())
+  topicId  String
+  topic    Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  text     String
+  optionA  String
+  optionB  String
+  imageUrl String?
+  order    Int     @default(0)
+}
+
+// Room is created when A submits answers.
+// 일반 게임: FE가 랜덤 선택한 questionIds(string[]) 저장, 질문 내용은 FE 로컬 데이터에서 조회
+// 커스텀 게임: questionsSnapshot(Question[]) 저장, 질문 내용은 서버에서 관리
+// aAnswers / bAnswers: [{questionId, choice: "A"|"B"}]
+model Room {
+  id                String     @id @default(cuid())
+  shortCode         String     @unique
+  topicId           String?
+  isCustom          Boolean    @default(false)
+  questionIds       Json?      // string[]  — 일반 게임 (FE 로컬 데이터 key)
+  questionsSnapshot Json?      // Question[] — 커스텀 게임 전용
+  aAnswers          Json?
+  bAnswers          Json?
+  status            RoomStatus @default(WAITING_B)
+  createdAt         DateTime   @default(now())
+  expiresAt         DateTime
+}
+
+enum RoomStatus {
+  WAITING_B
+  COMPLETE
+}
+
+// 토스 로그인으로 식별된 사용자
+// userKey: 앱인토스 OAuth에서 발급받는 고유 식별자
+model User {
+  id        String   @id @default(cuid())
+  userKey   String   @unique
+  createdAt DateTime @default(now())
+}
