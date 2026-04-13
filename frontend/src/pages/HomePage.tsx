@@ -1,19 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/web-framework';
 import { TOPICS_DATA } from '../data/topics';
 import { useAuth } from '../hooks/useAuth';
-
-// 커스텀 게임은 추후 구현 예정
-const CUSTOM_AD_GROUP_ID = import.meta.env.VITE_REWARDED_AD_GROUP_ID ?? 'ait.dev.43daa14da3ae487b';
-void CUSTOM_AD_GROUP_ID; void loadFullScreenAd; void showFullScreenAd;
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn, validating, login } = useAuth();
   const [loginLoading, setLoginLoading] = useState(false);
 
-  // 로그인 검증 완료 후 미로그인이면 자동으로 로그인 시도
   useEffect(() => {
     if (validating) return;
     if (!isLoggedIn) handleLogin();
@@ -30,7 +24,6 @@ export default function HomePage() {
     }
   }
 
-  // 검증 중이거나 로그인 시도 중이거나 아직 로그인 안 된 상태면 진입 차단
   if (validating || loginLoading || !isLoggedIn) {
     return (
       <div style={styles.center}>
@@ -41,12 +34,21 @@ export default function HomePage() {
 
   return (
     <div style={styles.container}>
-      {/* 상단 간략 설명 */}
-      <div style={styles.header}>
-        <p style={styles.subtitle}>주제를 골라 초대 코드를 만들고<br />친구와 함께 케미를 확인해봐요</p>
+
+      {/* 히어로 카드 */}
+      <div style={styles.hero}>
+        <p style={styles.heroTitle}>우리의 케미는? 🔍</p>
+        <p style={styles.heroDesc}>밸런스 게임으로 친구와 취향을 비교해봐요</p>
+        <div style={styles.steps}>
+          <Step label="답변 작성" />
+          <span style={styles.stepArrow}>›</span>
+          <Step label="친구 초대" />
+          <span style={styles.stepArrow}>›</span>
+          <Step label="케미 확인" />
+        </div>
       </div>
 
-      {/* 초대 현황 + 코드 입력 버튼 */}
+      {/* 초대 현황 / 코드 입력 */}
       <div style={styles.actionRow}>
         <button style={styles.actionBtn} onClick={() => navigate('/my-rooms')}>
           <span style={styles.actionIcon}>📋</span>
@@ -58,9 +60,9 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* 테마 선택 */}
+      {/* 주제 선택 */}
       <div style={styles.section}>
-        <p style={styles.sectionLabel}>테마 선택</p>
+        <p style={styles.sectionLabel}>어떤 주제로 시작할까요?</p>
         <div style={styles.topicGrid}>
           {TOPICS_DATA.map((topic) => (
             <button
@@ -75,42 +77,77 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+    </div>
+  );
+}
+
+function Step({ label }: { label: string }) {
+  return (
+    <div style={styles.step}>
+      <span style={styles.stepLabel}>{label}</span>
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { minHeight: '100dvh', backgroundColor: '#f4f4f4', paddingBottom: 32 },
+  container: { minHeight: '100dvh', backgroundColor: '#f4f4f4', paddingBottom: 40 },
   center: {
-    minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center',
+    minHeight: '100dvh', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', padding: 32,
   },
-  header: {
-    backgroundColor: '#fff', padding: '20px 24px 18px',
-    borderBottom: '1px solid #f0f0f0', textAlign: 'center',
+
+  // 히어로
+  hero: {
+    background: 'linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)',
+    padding: '28px 24px 24px',
+    textAlign: 'center',
   },
-  subtitle: { fontSize: 14, color: '#666', lineHeight: 1.7, margin: 0 },
+  heroTitle: {
+    fontSize: 22, fontWeight: 800, color: '#fff',
+    marginBottom: 6, letterSpacing: -0.3,
+  },
+  heroDesc: {
+    fontSize: 13, color: 'rgba(255,255,255,0.82)',
+    marginBottom: 20, lineHeight: 1.5,
+  },
+  steps: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  },
+  step: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 20, padding: '5px 12px',
+  },
+  stepLabel: { fontSize: 12, fontWeight: 600, color: '#fff' },
+  stepArrow: { fontSize: 14, color: 'rgba(255,255,255,0.5)', fontWeight: 700 },
+
+  // 액션 버튼
   actionRow: {
-    display: 'flex', gap: 10, padding: '16px 16px 0',
+    display: 'flex', gap: 10, padding: '14px 16px',
   },
   actionBtn: {
-    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-    gap: 6, padding: '16px 12px', borderRadius: 16,
-    backgroundColor: '#fff', border: '1.5px solid #E8F0FE',
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 8, padding: '14px 12px', borderRadius: 14,
+    backgroundColor: '#fff', border: '1px solid #E8F0FE',
     cursor: 'pointer', boxShadow: '0 1px 4px rgba(49,130,246,0.08)',
   },
-  actionIcon: { fontSize: 24 },
-  actionLabel: { fontSize: 13, fontWeight: 700, color: '#3182F6' },
-  section: { padding: '20px 16px 0' },
-  sectionLabel: { fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 12, paddingLeft: 4 },
+  actionIcon: { fontSize: 18 },
+  actionLabel: { fontSize: 14, fontWeight: 700, color: '#3182F6' },
+
+  // 주제 그리드
+  section: { padding: '0 16px' },
+  sectionLabel: {
+    fontSize: 13, fontWeight: 600, color: '#888',
+    marginBottom: 12, paddingLeft: 2,
+  },
   topicGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   topicCard: {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
     backgroundColor: '#fff', borderRadius: 16, padding: '18px 14px',
     border: '1.5px solid #f0f0f0', cursor: 'pointer', textAlign: 'left',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.04)', transition: 'border-color 0.15s',
   },
   topicEmoji: { fontSize: 28, marginBottom: 8 },
   topicName: { fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 },
-  topicDesc: { fontSize: 12, color: '#999', lineHeight: 1.4 },
+  topicDesc: { fontSize: 11, color: '#aaa', lineHeight: 1.4 },
 };
