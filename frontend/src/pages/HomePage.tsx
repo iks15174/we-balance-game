@@ -46,6 +46,7 @@ export default function HomePage() {
           <span style={styles.stepArrow}>›</span>
           <Step label="케미 확인" />
         </div>
+
       </div>
 
       {/* 초대 현황 / 코드 입력 */}
@@ -112,14 +113,15 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 20, lineHeight: 1.5,
   },
   steps: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: 4, flexWrap: 'wrap' as const,
   },
   step: {
     backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 20, padding: '5px 12px',
+    borderRadius: 20, padding: '4px 10px',
   },
-  stepLabel: { fontSize: 12, fontWeight: 600, color: '#fff' },
-  stepArrow: { fontSize: 14, color: 'rgba(255,255,255,0.5)', fontWeight: 700 },
+  stepLabel: { fontSize: 11, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' as const },
+  stepArrow: { fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 700, flexShrink: 0 },
 
   // 액션 버튼
   actionRow: {

@@ -55,12 +55,7 @@ export default function MyRoomsPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <button style={styles.backBtn} onClick={() => navigate('/')}>← 홈</button>
-        <h1 style={styles.title}>초대 현황</h1>
-        <div style={{ width: 48 }} />
-      </div>
-
+      {/* 탭 (헤더 없이 바로) */}
       <div style={styles.tabs}>
         <button
           style={{ ...styles.tab, ...(tab === 'sent' ? styles.tabActive : {}) }}
@@ -119,47 +114,50 @@ function RoomCard({
 
   const topicLabel = room.isCustom ? '✏️ 커스텀' : topic ? `${topic.emoji} ${topic.name}` : '알 수 없음';
   const dateStr = new Date(room.createdAt).toLocaleDateString('ko-KR', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    month: 'short', day: 'numeric',
   });
 
-  const otherName = room.otherName;
   const relationLabel = isSent
-    ? (otherName ? `→ ${otherName}` : '→ 친구 초대')
-    : (otherName ? `← ${otherName}` : '← 받은 초대');
+    ? (room.otherName ? `→ ${room.otherName}` : '→ 아직 참여 없음')
+    : (room.otherName ? `← ${room.otherName}` : '← 익명');
 
-  const tapHint = isExpired ? null
-    : isComplete ? '탭해서 결과 보기 →'
-    : isSent ? '탭해서 초대 화면 →'
+  const tapHint = isExpired ? '만료된 초대예요'
+    : isComplete ? '탭해서 결과 보기'
+    : isSent ? '탭해서 초대 화면 보기'
     : null;
 
   return (
-    <div style={styles.card}>
+    <div style={{ ...styles.card, opacity: isExpired ? 0.55 : 1 }}>
       <button
-        style={{ ...styles.cardBtn, opacity: isExpired ? 0.5 : 1 }}
+        style={styles.cardBtn}
         onClick={isExpired ? undefined : onTap}
         disabled={isExpired}
       >
-        {/* 상단: 방향 레이블 + 상태 뱃지 */}
-        <div style={styles.cardTop}>
-          <span style={styles.relationLabel}>{relationLabel}</span>
+        {/* 1행: 주제 + 상태 */}
+        <div style={styles.row1}>
+          <span style={styles.topicLabel}>{topicLabel}</span>
           <StatusBadge isComplete={isComplete} isExpired={isExpired} />
         </div>
 
-        {/* 주제 */}
-        <div style={styles.topicRow}>
-          <span style={styles.topicLabel}>{topicLabel}</span>
+        {/* 2행: 상대방 이름 */}
+        <div style={styles.row2}>
+          <span style={styles.relationLabel}>{relationLabel}</span>
         </div>
 
-        {/* 초대 코드 */}
-        <div style={styles.codeRow}>
+        {/* 3행: 코드 + 날짜 */}
+        <div style={styles.row3}>
           <span style={styles.shortCode}>{room.shortCode}</span>
           <span style={styles.date}>{dateStr}</span>
         </div>
 
-        {tapHint && <p style={styles.tapHint}>{tapHint}</p>}
+        {/* 하단 힌트 */}
+        {tapHint && (
+          <p style={{ ...styles.tapHint, color: isExpired ? '#ccc' : isComplete ? '#3182F6' : '#bbb' }}>
+            {tapHint}
+          </p>
+        )}
       </button>
 
-      {/* 삭제 버튼 - 카드 하단에 구분선 후 표시 */}
       {onDelete && (
         <div style={styles.deleteRow}>
           <button
@@ -167,7 +165,7 @@ function RoomCard({
             onClick={onDelete}
             disabled={deleting}
           >
-            {deleting ? '삭제 중...' : '초대 삭제'}
+            {deleting ? '삭제 중...' : '삭제'}
           </button>
         </div>
       )}
@@ -176,25 +174,20 @@ function RoomCard({
 }
 
 function StatusBadge({ isComplete, isExpired }: { isComplete: boolean; isExpired: boolean }) {
-  if (isExpired) return <span style={{ ...styles.statusBadge, backgroundColor: '#f0f0f0', color: '#aaa' }}>만료</span>;
-  if (isComplete) return <span style={{ ...styles.statusBadge, backgroundColor: '#E8F5E9', color: '#2E7D32' }}>완료 ✅</span>;
-  return <span style={{ ...styles.statusBadge, backgroundColor: '#EBF3FF', color: '#3182F6' }}>대기 중</span>;
+  if (isExpired) return <span style={{ ...styles.badge2, backgroundColor: '#f0f0f0', color: '#aaa' }}>만료</span>;
+  if (isComplete) return <span style={{ ...styles.badge2, backgroundColor: '#E8F5E9', color: '#2E7D32' }}>완료</span>;
+  return <span style={{ ...styles.badge2, backgroundColor: '#EBF3FF', color: '#3182F6' }}>대기 중</span>;
 }
 
 const styles: Record<string, React.CSSProperties> = {
   container: { minHeight: '100dvh', backgroundColor: '#f4f4f4', paddingBottom: 32 },
   center: { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', padding: '16px', borderBottom: '1px solid #f0f0f0',
-  },
-  backBtn: { fontSize: 14, color: '#555', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' },
-  title: { fontSize: 17, fontWeight: 700, color: '#111' },
+
   tabs: {
     display: 'flex', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0',
   },
   tab: {
-    flex: 1, padding: '14px 0', fontSize: 14, fontWeight: 600,
+    flex: 1, padding: '16px 0', fontSize: 14, fontWeight: 600,
     color: '#bbb', background: 'none', border: 'none', borderBottom: '2px solid transparent',
     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   },
@@ -203,34 +196,39 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#3182F6', color: '#fff', fontSize: 11, fontWeight: 700,
     borderRadius: 10, padding: '1px 6px',
   },
-  list: { padding: '12px 16px 0' },
+
+  list: { padding: '14px 16px 0' },
   card: {
-    backgroundColor: '#fff', borderRadius: 18, marginBottom: 12,
-    overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+    backgroundColor: '#fff', borderRadius: 16, marginBottom: 10,
+    overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
   },
   cardBtn: {
-    width: '100%', padding: '18px 20px', textAlign: 'left',
+    width: '100%', padding: '16px 18px', textAlign: 'left',
     background: 'none', border: 'none', cursor: 'pointer',
   },
-  cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  relationLabel: { fontSize: 13, fontWeight: 700, color: '#3182F6' },
-  statusBadge: { fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, flexShrink: 0 },
-  topicRow: { marginBottom: 10 },
-  topicLabel: { fontSize: 17, fontWeight: 700, color: '#111' },
-  codeRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  shortCode: { fontSize: 22, fontWeight: 900, color: '#3182F6', letterSpacing: 4 },
+
+  row1: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  topicLabel: { fontSize: 16, fontWeight: 700, color: '#111' },
+  badge2: { fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 20, flexShrink: 0 },
+
+  row2: { marginBottom: 10 },
+  relationLabel: { fontSize: 13, color: '#888', fontWeight: 500 },
+
+  row3: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  shortCode: { fontSize: 18, fontWeight: 800, color: '#3182F6', letterSpacing: 3 },
   date: { fontSize: 12, color: '#ccc' },
-  tapHint: { fontSize: 11, color: '#bbb', marginTop: 8 },
-  deleteRow: {
-    borderTop: '1px solid #f5f5f5', padding: '0',
-  },
+
+  tapHint: { fontSize: 11, marginTop: 8, fontWeight: 500 },
+
+  deleteRow: { borderTop: '1px solid #f5f5f5' },
   deleteBtn: {
-    width: '100%', padding: '12px 20px', background: 'none', border: 'none',
+    width: '100%', padding: '11px 18px', background: 'none', border: 'none',
     fontSize: 13, color: '#FF4444', cursor: 'pointer', textAlign: 'left',
   },
+
   empty: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', minHeight: 'calc(100dvh - 120px)', padding: 32,
+    justifyContent: 'center', minHeight: 'calc(100dvh - 60px)', padding: 32,
   },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
   emptyText: { fontSize: 15, color: '#999', marginBottom: 24 },

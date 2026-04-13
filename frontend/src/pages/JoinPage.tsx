@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 
-// /join/:shortCode 라우트에서 진입 (딥링크 또는 직접 접근)
-// 코드가 없으면 수동 입력 폼 표시
 export default function JoinPage() {
   const { shortCode: paramCode } = useParams<{ shortCode?: string }>();
   const navigate = useNavigate();
@@ -11,7 +9,6 @@ export default function JoinPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 딥링크로 코드가 바로 전달된 경우 자동 진입
   useEffect(() => {
     if (paramCode) handleEnter(paramCode);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -24,7 +21,6 @@ export default function JoinPage() {
     try {
       const room = await api.getRoom(c);
       if (room.bCompleted) {
-        // B가 이미 완료했으면 결과 페이지로
         navigate(`/result/${c}`);
       } else {
         navigate(`/game?shortCode=${c}`);
@@ -37,6 +33,9 @@ export default function JoinPage() {
 
   return (
     <div style={styles.container}>
+      {/* placeholder 폰트 크기 분리 */}
+      <style>{`.join-input::placeholder { font-size: 14px; letter-spacing: 0; color: #bbb; }`}</style>
+
       <div style={styles.content}>
         <div style={styles.emoji}>📬</div>
         <h2 style={styles.title}>초대 코드 입력</h2>
@@ -46,8 +45,9 @@ export default function JoinPage() {
         </p>
 
         <input
+          className="join-input"
           style={styles.input}
-          placeholder="6자리 코드 입력 (예: A1B2C3)"
+          placeholder="6자리 코드 (예: A1B2C3)"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           maxLength={6}
@@ -63,7 +63,7 @@ export default function JoinPage() {
           onClick={() => handleEnter()}
           disabled={loading}
         >
-          {loading ? '확인 중...' : '게임 시작 →'}
+          {loading ? '확인 중...' : '게임 시작'}
         </button>
       </div>
     </div>
@@ -83,7 +83,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%', padding: '16px', borderRadius: 14,
     border: '2px solid #ddd', fontSize: 22, fontWeight: 700,
     textAlign: 'center', letterSpacing: 6, color: '#111',
-    outline: 'none', marginBottom: 8,
+    outline: 'none', marginBottom: 8, boxSizing: 'border-box',
   },
   error: { fontSize: 13, color: '#FF4444', marginBottom: 8 },
   btn: {
