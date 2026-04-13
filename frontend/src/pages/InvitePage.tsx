@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { share, getTossShareLink } from '@apps-in-toss/web-framework';
 
@@ -6,6 +7,17 @@ const APP_NAME = import.meta.env.VITE_APP_NAME ?? 'we-balance-game';
 export default function InvitePage() {
   const { shortCode } = useParams<{ shortCode: string }>();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopyCode() {
+    try {
+      await navigator.clipboard.writeText(shortCode ?? '');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert(`초대 코드: ${shortCode}`);
+    }
+  }
 
   async function handleShare() {
     try {
@@ -32,11 +44,14 @@ export default function InvitePage() {
           친구가 다 풀면 함께 결과를 확인할 수 있어요.
         </p>
 
-        <div style={styles.codeCard}>
-          <p style={styles.codeLabel}>초대 코드</p>
+        {/* 초대코드 — 클릭 시 클립보드 복사 */}
+        <button style={styles.codeCard} onClick={handleCopyCode}>
+          <p style={styles.codeLabel}>초대 코드 (탭하면 복사)</p>
           <p style={styles.code}>{shortCode}</p>
-          <p style={styles.codeHint}>친구가 코드를 직접 입력해서 들어올 수 있어요</p>
-        </div>
+          <p style={styles.codeHint}>
+            {copied ? '✅ 복사됐어요!' : '친구가 코드를 직접 입력해서 들어올 수 있어요'}
+          </p>
+        </button>
 
         <button style={styles.shareBtn} onClick={handleShare}>
           <span style={styles.shareIcon}>💬</span>
@@ -65,13 +80,14 @@ const styles: Record<string, React.CSSProperties> = {
   content: { width: '100%', maxWidth: 360, textAlign: 'center' },
   emoji: { fontSize: 56, marginBottom: 16 },
   title: { fontSize: 24, fontWeight: 800, color: '#111', marginBottom: 8 },
-  desc: { fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 28 },
+  desc: { fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 20 },
   codeCard: {
-    backgroundColor: '#fff', borderRadius: 20, padding: '20px 24px',
-    marginBottom: 20, border: '2px solid #3182F6',
+    width: '100%', backgroundColor: '#fff', borderRadius: 20, padding: '16px 24px',
+    marginBottom: 16, border: '2px solid #3182F6', cursor: 'pointer',
+    textAlign: 'center',
   },
-  codeLabel: { fontSize: 12, color: '#999', marginBottom: 6 },
-  code: { fontSize: 36, fontWeight: 900, color: '#3182F6', letterSpacing: 6, marginBottom: 6 },
+  codeLabel: { fontSize: 11, color: '#3182F6', fontWeight: 600, marginBottom: 6 },
+  code: { fontSize: 26, fontWeight: 900, color: '#3182F6', letterSpacing: 6, marginBottom: 4 },
   codeHint: { fontSize: 11, color: '#bbb' },
   shareBtn: {
     width: '100%', padding: '16px 20px', borderRadius: 16, border: 'none',

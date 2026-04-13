@@ -88,7 +88,7 @@ const styles: Record<string, React.CSSProperties> = {
   error: { fontSize: 13, color: '#FF4444', marginBottom: 8 },
   btn: {
     width: '100%', padding: 16, borderRadius: 14, border: 'none',
-    backgroundColor: '#FFC500', fontSize: 16, fontWeight: 700, color: '#111',
+    backgroundColor: '#3182F6', fontSize: 16, fontWeight: 700, color: '#fff',
     cursor: 'pointer', marginTop: 8,
   },
 };

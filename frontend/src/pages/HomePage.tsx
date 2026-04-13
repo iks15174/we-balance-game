@@ -4,26 +4,14 @@ import { loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/web-framework'
 import { TOPICS_DATA } from '../data/topics';
 import { useAuth } from '../hooks/useAuth';
 
+// 커스텀 게임은 추후 구현 예정
 const CUSTOM_AD_GROUP_ID = import.meta.env.VITE_REWARDED_AD_GROUP_ID ?? 'ait.dev.43daa14da3ae487b';
+void CUSTOM_AD_GROUP_ID; void loadFullScreenAd; void showFullScreenAd;
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn, validating, login } = useAuth();
   const [loginLoading, setLoginLoading] = useState(false);
-  const [customAdLoaded, setCustomAdLoaded] = useState(false);
-  const unregisterRef = useRef<(() => void) | null>(null);
-
-  // 커스텀 게임용 보상형 광고 미리 로드
-  useEffect(() => {
-    if (!loadFullScreenAd.isSupported()) return;
-    const unregister = loadFullScreenAd({
-      options: { adGroupId: CUSTOM_AD_GROUP_ID },
-      onEvent: (e) => { if (e.type === 'loaded') setCustomAdLoaded(true); },
-      onError: console.error,
-    });
-    unregisterRef.current = unregister;
-    return () => unregister();
-  }, []);
 
   // 로그인 검증 완료 후 미로그인이면 자동으로 로그인 시도
   useEffect(() => {
@@ -42,26 +30,6 @@ export default function HomePage() {
     }
   }
 
-  function handleTopicSelect(topicId: string) {
-    navigate(`/intro?topicId=${topicId}`);
-  }
-
-  function handleCustomGame() {
-    if (!loadFullScreenAd.isSupported()) {
-      navigate('/custom');
-      return;
-    }
-    if (!customAdLoaded) {
-      alert('광고를 불러오는 중이에요. 잠시 후 다시 시도해 주세요.');
-      return;
-    }
-    showFullScreenAd({
-      options: { adGroupId: CUSTOM_AD_GROUP_ID },
-      onEvent: (e) => { if (e.type === 'userEarnedReward') navigate('/custom'); },
-      onError: () => navigate('/custom'),
-    });
-  }
-
   if (validating || loginLoading) {
     return (
       <div style={styles.center}>
@@ -72,16 +40,33 @@ export default function HomePage() {
 
   return (
     <div style={styles.container}>
+      {/* 상단 간략 설명 */}
+      <div style={styles.header}>
+        <p style={styles.subtitle}>주제를 골라 초대 코드를 만들고<br />친구와 함께 케미를 확인해봐요</p>
+      </div>
+
+      {/* 초대 현황 + 코드 입력 버튼 */}
+      <div style={styles.actionRow}>
+        <button style={styles.actionBtn} onClick={() => navigate('/my-rooms')}>
+          <span style={styles.actionIcon}>📋</span>
+          <span style={styles.actionLabel}>초대 현황</span>
+        </button>
+        <button style={styles.actionBtn} onClick={() => navigate('/join')}>
+          <span style={styles.actionIcon}>📬</span>
+          <span style={styles.actionLabel}>코드 입력</span>
+        </button>
+      </div>
+
+      {/* 테마 선택 */}
       <div style={styles.section}>
-        <div style={styles.sectionHeader}>
-          <p style={styles.sectionLabel}>테마 선택</p>
-          <button style={styles.myRoomsLink} onClick={() => navigate('/my-rooms')}>
-            초대 현황 →
-          </button>
-        </div>
+        <p style={styles.sectionLabel}>테마 선택</p>
         <div style={styles.topicGrid}>
           {TOPICS_DATA.map((topic) => (
-            <button key={topic.id} style={styles.topicCard} onClick={() => handleTopicSelect(topic.id)}>
+            <button
+              key={topic.id}
+              style={styles.topicCard}
+              onClick={() => navigate(`/intro?topicId=${topic.id}`)}
+            >
               <span style={styles.topicEmoji}>{topic.emoji}</span>
               <span style={styles.topicName}>{topic.name}</span>
               <span style={styles.topicDesc}>{topic.description}</span>
@@ -89,17 +74,6 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-
-      <div style={styles.divider} />
-
-      <button style={styles.customBtn} onClick={handleCustomGame}>
-        <span style={styles.customIcon}>✏️</span>
-        <div>
-          <div style={styles.customTitle}>우리만의 밸런스 게임 만들기</div>
-          <div style={styles.customSubtitle}>광고 1회 시청 후 이용 가능</div>
-        </div>
-        <span style={styles.arrow}>›</span>
-      </button>
     </div>
   );
 }
@@ -110,13 +84,24 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: '100dvh', display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center',
   },
-  section: { padding: '20px 16px 0' },
-  sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingLeft: 4 },
-  sectionLabel: { fontSize: 13, fontWeight: 600, color: '#888' },
-  myRoomsLink: {
-    fontSize: 13, color: '#3182F6', fontWeight: 600,
-    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+  header: {
+    backgroundColor: '#fff', padding: '20px 24px 18px',
+    borderBottom: '1px solid #f0f0f0', textAlign: 'center',
   },
+  subtitle: { fontSize: 14, color: '#666', lineHeight: 1.7, margin: 0 },
+  actionRow: {
+    display: 'flex', gap: 10, padding: '16px 16px 0',
+  },
+  actionBtn: {
+    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+    gap: 6, padding: '16px 12px', borderRadius: 16,
+    backgroundColor: '#fff', border: '1.5px solid #E8F0FE',
+    cursor: 'pointer', boxShadow: '0 1px 4px rgba(49,130,246,0.08)',
+  },
+  actionIcon: { fontSize: 24 },
+  actionLabel: { fontSize: 13, fontWeight: 700, color: '#3182F6' },
+  section: { padding: '20px 16px 0' },
+  sectionLabel: { fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 12, paddingLeft: 4 },
   topicGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   topicCard: {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
@@ -127,15 +112,4 @@ const styles: Record<string, React.CSSProperties> = {
   topicEmoji: { fontSize: 28, marginBottom: 8 },
   topicName: { fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 },
   topicDesc: { fontSize: 12, color: '#999', lineHeight: 1.4 },
-  divider: { height: 8, backgroundColor: '#f4f4f4', margin: '24px 0 0' },
-  customBtn: {
-    display: 'flex', alignItems: 'center', gap: 14,
-    width: 'calc(100% - 32px)', margin: '0 16px',
-    backgroundColor: '#fff', borderRadius: 16, padding: '18px 16px',
-    border: '1.5px solid #3182F6', cursor: 'pointer', textAlign: 'left',
-  },
-  customIcon: { fontSize: 28, flexShrink: 0 },
-  customTitle: { fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 2 },
-  customSubtitle: { fontSize: 12, color: '#3182F6', fontWeight: 500 },
-  arrow: { fontSize: 22, color: '#ccc', marginLeft: 'auto' },
 };

@@ -24,10 +24,10 @@ router.post('/unlink', async (req, res) => {
   }
 
   try {
-    await Promise.all([
-      prisma.user.deleteMany({ where: { userKey } }),
+    await prisma.$transaction([
       prisma.room.deleteMany({ where: { creatorUserKey: userKey } }),
       prisma.room.deleteMany({ where: { bUserKey: userKey } }),
+      prisma.user.deleteMany({ where: { userKey } }),
     ]);
 
     console.info(`유저 탈퇴 처리 완료: ${userKey.slice(0, 8)}...`);
