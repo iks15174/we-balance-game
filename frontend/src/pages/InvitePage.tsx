@@ -63,9 +63,6 @@ export default function InvitePage() {
           친구 기다리기
         </button>
 
-        <button style={styles.selfTestBtn} onClick={() => navigate(`/game?shortCode=${shortCode}`)}>
-          나도 직접 풀어보기 (테스트용)
-        </button>
       </div>
     </div>
   );
@@ -100,10 +97,5 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%', padding: '14px 20px', borderRadius: 16,
     border: '1.5px solid #ddd', backgroundColor: '#fff',
     fontSize: 15, color: '#555', cursor: 'pointer',
-  },
-  selfTestBtn: {
-    width: '100%', padding: '10px 20px', borderRadius: 12, border: 'none',
-    backgroundColor: 'transparent', fontSize: 13, color: '#bbb', cursor: 'pointer',
-    marginTop: 8,
   },
 };

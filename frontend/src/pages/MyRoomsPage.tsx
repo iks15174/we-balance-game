@@ -114,8 +114,8 @@ function RoomCard({
   const isExpired = new Date() > new Date(room.expiresAt);
 
   const topicLabel = room.isCustom ? '✏️ 커스텀' : topic ? `${topic.emoji} ${topic.name}` : '알 수 없음';
-  const dateStr = new Date(room.createdAt).toLocaleDateString('ko-KR', {
-    month: 'short', day: 'numeric',
+  const dateStr = new Date(room.createdAt).toLocaleString('ko-KR', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
   const relationLabel = isSent
