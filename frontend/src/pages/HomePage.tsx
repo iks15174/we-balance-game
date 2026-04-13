@@ -30,7 +30,8 @@ export default function HomePage() {
     }
   }
 
-  if (validating || loginLoading) {
+  // 검증 중이거나 로그인 시도 중이거나 아직 로그인 안 된 상태면 진입 차단
+  if (validating || loginLoading || !isLoggedIn) {
     return (
       <div style={styles.center}>
         <p style={{ fontSize: 13, color: '#999' }}>잠시만 기다려 주세요...</p>
