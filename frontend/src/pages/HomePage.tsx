@@ -119,8 +119,9 @@ const styles: Record<string, React.CSSProperties> = {
   step: {
     backgroundColor: 'rgba(255,255,255,0.18)',
     borderRadius: 20, padding: '4px 10px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  stepLabel: { fontSize: 11, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' as const },
+  stepLabel: { fontSize: 11, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' as const, lineHeight: 1 },
   stepArrow: { fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 700, flexShrink: 0 },
 
   // 액션 버튼

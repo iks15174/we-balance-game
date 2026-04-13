@@ -41,6 +41,7 @@ export default function MyRoomsPage() {
   function handleTap(room: MyRoom) {
     if (room.status === 'COMPLETE') navigate(`/result/${room.shortCode}`);
     else if (tab === 'sent') navigate(`/invite/${room.shortCode}`);
+    else alert('아직 결과가 나오지 않았어요. 상대방이 답변을 완료하면 결과를 확인할 수 있어요.');
   }
 
   const list = tab === 'sent' ? sent : received;
@@ -124,7 +125,7 @@ function RoomCard({
   const tapHint = isExpired ? '만료된 초대예요'
     : isComplete ? '탭해서 결과 보기'
     : isSent ? '탭해서 초대 화면 보기'
-    : null;
+    : '아직 상대방이 답변 중이에요';
 
   return (
     <div style={{ ...styles.card, opacity: isExpired ? 0.55 : 1 }}>

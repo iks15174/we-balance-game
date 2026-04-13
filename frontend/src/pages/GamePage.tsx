@@ -77,21 +77,8 @@ export default function GamePage() {
     }, 400);
   }
 
-  function handleNext() {
-    if (!answers.has(questions[currentIndex].id)) return;
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(i => i + 1);
-    } else {
-      handleSubmit();
-    }
-  }
-
   function handlePrev() {
     if (currentIndex > 0) setCurrentIndex(i => i - 1);
-  }
-
-  async function handleSubmit() {
-    handleSubmitWithAnswers(answers);
   }
 
   async function handleSubmitWithAnswers(finalAnswers: Map<string, 'A' | 'B'>) {
@@ -138,7 +125,6 @@ export default function GamePage() {
 
   const currentQuestion = questions[currentIndex];
   const selected = answers.get(currentQuestion.id) ?? null;
-  const isLast = currentIndex === questions.length - 1;
 
   return (
     <div style={styles.container}>
@@ -208,6 +194,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   actionBtn: {
     padding: '12px 28px', borderRadius: 12, border: 'none',
-    backgroundColor: '#FFC500', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+    backgroundColor: '#3182F6', fontSize: 15, fontWeight: 700, color: '#fff', cursor: 'pointer',
   },
 };

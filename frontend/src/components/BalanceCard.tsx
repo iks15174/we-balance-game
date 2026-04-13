@@ -56,7 +56,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { padding: '0 16px' },
+  container: { padding: '20px 16px 0' },
   progress: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 },
   progressBar: {
     flex: 1, height: 6, backgroundColor: '#eee', borderRadius: 3, overflow: 'hidden',

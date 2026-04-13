@@ -55,11 +55,17 @@ export function useAd({ adGroupId, onDismissed, onReward }: UseAdOptions) {
             // 다음 광고 미리 로드
             load();
             break;
+          case 'failedToShow':
+            // 광고 표시 실패 시에도 흐름 유지
+            setIsLoaded(false);
+            onDismissed?.();
+            break;
         }
       },
       onError: (err) => {
         console.error('Ad show error:', err);
         // 광고 실패 시에도 onDismissed 콜백 호출 (UX 흐름 유지)
+        setIsLoaded(false);
         onDismissed?.();
       },
     });
