@@ -39,7 +39,7 @@ const ChemistryShareCard = forwardRef<HTMLDivElement, Props>(({ result }, ref) =
           marginBottom: 20,
         }}
       >
-        <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.6)', fontWeight: 600 }}>우리사이 케미</span>
+        <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.6)', fontWeight: 600 }}>우리사이 궁합</span>
       </div>
       <div
         style={{

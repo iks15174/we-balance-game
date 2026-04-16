@@ -307,10 +307,26 @@ router.get('/:shortCode/result', async (req, res) => {
 });
 
 function getGrade(percent: number) {
-  if (percent >= 90) return { label: '영혼의 쌍둥이', description: '말 안 해도 통하는 사이' };
-  if (percent >= 70) return { label: '환장의 짝꿍', description: '서로를 잘 아는 케미 폭발 사이' };
-  if (percent >= 40) return { label: '철저한 비즈니스 관계', description: '다르지만 함께라면 성장하는 사이' };
-  return { label: '어떻게 친해진 거지?', description: '정반대지만 그래서 더 재밌는 사이' };
+  if (percent >= 96) return { label: '완벽한 짝꿍', description: '말 안 해도 통하는 사이' };
+  if (percent >= 91) return { label: '영혼의 단짝', description: '서로를 누구보다 잘 아는 사이' };
+  if (percent >= 86) return { label: '최고의 콤비', description: '함께라면 무엇이든 척척' };
+  if (percent >= 81) return { label: '마음이 통하는 사이', description: '생각이 비슷해서 편안한 사이' };
+  if (percent >= 76) return { label: '잘 통하는 친구', description: '자주 의견이 맞는 사이' };
+  if (percent >= 71) return { label: '믿음직한 동반자', description: '서로 믿고 의지할 수 있는 사이' };
+  if (percent >= 66) return { label: '좋은 관계', description: '함께 있으면 즐거운 사이' };
+  if (percent >= 61) return { label: '괜찮은 사이', description: '어느 정도 마음이 맞는 사이' };
+  if (percent >= 56) return { label: '편안한 관계', description: '특별히 불편한 점 없는 사이' };
+  if (percent >= 51) return { label: '그럭저럭 잘 맞는 사이', description: '차이가 있지만 이해하는 사이' };
+  if (percent >= 46) return { label: '반반 사이', description: '맞는 부분과 다른 부분이 공존하는 사이' };
+  if (percent >= 41) return { label: '평범한 관계', description: '조금씩 다른 부분이 있는 사이' };
+  if (percent >= 36) return { label: '차이가 느껴지는 사이', description: '다르지만 함께라면 성장하는 사이' };
+  if (percent >= 31) return { label: '다른 점이 많은 사이', description: '서로 다름을 배워가는 사이' };
+  if (percent >= 26) return { label: '타입이 꽤 다른 사이', description: '의견이 자주 엇갈리는 사이' };
+  if (percent >= 21) return { label: '많이 다른 사이', description: '생각 차이가 꽤 크지만 재밌는 사이' };
+  if (percent >= 16) return { label: '반대 스타일', description: '정반대에 가깝지만 그게 매력인 사이' };
+  if (percent >= 11) return { label: '극과 극의 사이', description: '이 정도면 신기하게 잘 지내는 사이' };
+  if (percent >= 6)  return { label: '완전히 다른 세계', description: '어떻게 친해진 건지 신기한 사이' };
+  return { label: '우주 반대편', description: '정반대지만 그래서 더 재밌는 사이' };
 }
 
 export default router;

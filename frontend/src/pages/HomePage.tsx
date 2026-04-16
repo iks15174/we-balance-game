@@ -37,14 +37,14 @@ export default function HomePage() {
 
       {/* 히어로 카드 */}
       <div style={styles.hero}>
-        <p style={styles.heroTitle}>우리의 케미는? 🔍</p>
+        <p style={styles.heroTitle}>우리의 궁합은?</p>
         <p style={styles.heroDesc}>밸런스 게임으로 친구와 취향을 비교해봐요</p>
         <div style={styles.steps}>
           <Step label="답변 작성" />
           <span style={styles.stepArrow}>›</span>
           <Step label="친구 초대" />
           <span style={styles.stepArrow}>›</span>
-          <Step label="케미 확인" />
+          <Step label="결과 확인" />
         </div>
 
       </div>

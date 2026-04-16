@@ -69,7 +69,7 @@ export default function ResultPage() {
     try {
       const link = await getTossShareLink(`intoss://we-balance-game/result/${shortCode}`);
       await share({
-        message: `우리사이 케미 ${result.matchPercent}%! ${result.grade.label}\n${result.grade.description}\n결과 보러 가기 → ${link}`,
+        message: `우리사이 궁합 ${result.matchPercent}%! ${result.grade.label}\n${result.grade.description}\n결과 보러 가기 → ${link}`,
       });
     } catch {
       alert('공유에 실패했어요.');
@@ -91,9 +91,8 @@ export default function ResultPage() {
   if (phase === 'loading') {
     return (
       <div style={styles.center}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🔮</div>
         <p style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 6 }}>
-          우리사이 케미 분석 중...
+          궁합 분석 중...
         </p>
         <p style={{ fontSize: 13, color: '#999' }}>잠시만 기다려 주세요</p>
       </div>
@@ -103,19 +102,18 @@ export default function ResultPage() {
   if (phase === 'ad') {
     return (
       <div style={styles.center}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
         <p style={{ fontSize: 18, fontWeight: 700, color: '#111', marginBottom: 8 }}>
           분석 완료!
         </p>
         <p style={{ fontSize: 14, color: '#888', marginBottom: 32, textAlign: 'center', lineHeight: 1.6 }}>
-          광고 1개를 시청하면<br />케미 결과를 바로 확인할 수 있어요
+          광고 1개를 시청하면<br />결과를 바로 확인할 수 있어요
         </p>
         <button
           style={{ ...styles.btn, width: '100%', maxWidth: 280, opacity: adLoaded ? 1 : 0.6 }}
           onClick={adLoaded ? showAd : undefined}
           disabled={!adLoaded}
         >
-          {adLoaded ? '광고 보고 결과 확인하기 🎁' : '광고 준비 중...'}
+          {adLoaded ? '광고 보고 결과 확인하기' : '광고 준비 중...'}
         </button>
       </div>
     );
@@ -152,7 +150,7 @@ export default function ResultPage() {
 
       <div style={styles.shareRow}>
         <button style={styles.shareBtn} onClick={handleShareCard} disabled={sharing}>
-          {sharing ? '저장 중...' : '📸 케미 카드 공유하기'}
+          {sharing ? '저장 중...' : '결과 카드 공유하기'}
         </button>
       </div>
 

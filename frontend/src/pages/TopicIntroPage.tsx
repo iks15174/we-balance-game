@@ -26,20 +26,17 @@ export default function TopicIntroPage() {
           <Step number={1} text="내가 먼저 5개 질문에 답해요" />
           <Step number={2} text="초대 코드를 받아서 친구에게 공유해요" />
           <Step number={3} text="친구도 같은 질문에 답해요" />
-          <Step number={4} text="서로 얼마나 일치했는지 케미를 확인해요 🎉" />
+          <Step number={4} text="서로 얼마나 일치했는지 결과를 확인해요" />
         </div>
       </div>
 
       <div style={styles.hint}>
-        💡 답변이 얼마나 같은지에 따라 케미 점수와 등급이 결정돼요
+        답변이 얼마나 같은지에 따라 일치도와 등급이 결정돼요
       </div>
 
       <div style={styles.footer}>
         <button style={styles.startBtn} onClick={() => navigate(`/game?topicId=${topicId}`, { replace: true })}>
           내 답변 먼저 작성하기
-        </button>
-        <button style={styles.backBtn} onClick={() => navigate('/')}>
-          돌아가기
         </button>
       </div>
     </div>
@@ -90,15 +87,10 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'fixed', bottom: 0, left: 0, right: 0,
     padding: '12px 20px 20px', backgroundColor: '#fff',
     borderTop: '1px solid #f0f0f0',
-    display: 'flex', flexDirection: 'column', gap: 8,
   },
   startBtn: {
     width: '100%', padding: 15, borderRadius: 14, border: 'none',
     backgroundColor: '#3182F6', fontSize: 16, fontWeight: 700,
     color: '#fff', cursor: 'pointer',
-  },
-  backBtn: {
-    width: '100%', padding: 12, borderRadius: 14, border: 'none',
-    backgroundColor: 'transparent', fontSize: 14, color: '#999', cursor: 'pointer',
   },
 };

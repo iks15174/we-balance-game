@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { share, getTossShareLink } from '@apps-in-toss/web-framework';
+import { share, getTossShareLink, loadFullScreenAd } from '@apps-in-toss/web-framework';
 import { api } from '../api/client';
+
+const INTERSTITIAL_AD_GROUP_ID =
+  import.meta.env.VITE_INTERSTITIAL_AD_GROUP_ID ?? 'ait.v2.live.aed9b062f93f4df7';
 
 const APP_NAME = import.meta.env.VITE_APP_NAME ?? 'we-balance-game';
 const POLL_INTERVAL = 5000; // 5초마다 폴링
@@ -15,6 +18,17 @@ export default function WaitingPage() {
   const [dots, setDots] = useState('.');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigatedRef = useRef(false); // 중복 navigate 방지
+
+  // ResultPage에서 바로 광고를 표시할 수 있도록 미리 로딩
+  useEffect(() => {
+    if (!loadFullScreenAd.isSupported()) return;
+    const unregister = loadFullScreenAd({
+      options: { adGroupId: INTERSTITIAL_AD_GROUP_ID },
+      onEvent: () => {},
+      onError: () => {},
+    });
+    return () => unregister();
+  }, []);
 
   // 애니메이션 점
   useEffect(() => {
@@ -70,7 +84,7 @@ export default function WaitingPage() {
         <h2 style={styles.title}>
           {role === 'A'
             ? `친구가 답변 중이에요${dots}`
-            : `케미 분석 중이에요${dots}`}
+            : `결과 분석 중이에요${dots}`}
         </h2>
         <p style={styles.desc}>
           {role === 'A'

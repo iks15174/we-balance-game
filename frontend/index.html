@@ -22,6 +22,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // React 마운트 전에 딥링크 pathname → hash 변환
+      // HashRouter가 올바른 경로에서 시작하도록 보장 (HomePage 렌더 방지)
+      (function () {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        if (path && path !== '/' && !window.location.hash) {
+          window.location.replace(
+            window.location.origin + '/#' + path + search
+          );
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
