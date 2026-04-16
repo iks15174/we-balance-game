@@ -79,6 +79,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '2px solid transparent', cursor: 'pointer', textAlign: 'left',
     transition: 'border-color 0.15s, background-color 0.15s',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    outline: 'none', WebkitTapHighlightColor: 'transparent',
   },
   optionSelected: {
     borderColor: '#3182F6',

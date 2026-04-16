@@ -1,17 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 
 export default function JoinPage() {
   const { shortCode: paramCode } = useParams<{ shortCode?: string }>();
   const navigate = useNavigate();
+  const { isLoggedIn, validating, login } = useAuth();
   const [code, setCode] = useState(paramCode ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const autoEnteredRef = useRef(false);
 
+  // 딥링크 자동 진입: 로그인 완료 후 게임으로 이동
   useEffect(() => {
-    if (paramCode) handleEnter(paramCode);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!paramCode) return;
+    if (validating) return; // 인증 확인 대기
+    if (autoEnteredRef.current) return;
+    autoEnteredRef.current = true;
+
+    async function autoEnter() {
+      setLoading(true);
+      try {
+        if (!isLoggedIn) await login();
+        await handleEnter(paramCode);
+      } catch {
+        setError('로그인에 실패했어요. 다시 시도해 주세요.');
+        setLoading(false);
+      }
+    }
+    autoEnter();
+  }, [paramCode, validating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleEnter(targetCode?: string) {
     const c = (targetCode ?? code).trim().toUpperCase();
@@ -29,6 +48,14 @@ export default function JoinPage() {
       setError(err.message ?? '방을 찾을 수 없어요');
       setLoading(false);
     }
+  }
+
+  if (loading && paramCode) {
+    return (
+      <div style={styles.container}>
+        <p style={{ fontSize: 14, color: '#999' }}>잠시만 기다려 주세요...</p>
+      </div>
+    );
   }
 
   return (
@@ -89,6 +116,6 @@ const styles: Record<string, React.CSSProperties> = {
   btn: {
     width: '100%', padding: 16, borderRadius: 14, border: 'none',
     backgroundColor: '#3182F6', fontSize: 16, fontWeight: 700, color: '#fff',
-    cursor: 'pointer', marginTop: 8,
+    cursor: 'pointer', marginTop: 8, outline: 'none',
   },
 };

@@ -6,7 +6,8 @@ import { api } from '../api/client';
 import { GameResult, ResultDetail } from '../types';
 import { getQuestionById } from '../data/topics';
 
-const INTERSTITIAL_AD_GROUP_ID = import.meta.env.VITE_INTERSTITIAL_AD_GROUP_ID ?? 'ait.v2.live.aed9b062f93f4df7';
+const INTERSTITIAL_AD_GROUP_ID =
+  import.meta.env.VITE_INTERSTITIAL_AD_GROUP_ID ?? 'ait.v2.live.aed9b062f93f4df7';
 // 이미 광고 시청한 shortCode를 세션 중 기억 — 재방문 시 광고 스킵
 const watchedAds = new Set<string>();
 
@@ -29,13 +30,19 @@ export default function ResultPage() {
     },
   });
 
-  // 광고가 5초 내에 로딩되지 않으면 건너뛰기 버튼 표시
+  // 광고가 8초 내에 로딩되지 않으면 자동으로 결과 화면으로 이동
   useEffect(() => {
     if (phase !== 'ad') return;
     if (adLoaded) return;
-    const timer = setTimeout(() => setAdTimedOut(true), 5000);
+    const timer = setTimeout(() => setAdTimedOut(true), 8000);
     return () => clearTimeout(timer);
   }, [phase, adLoaded]);
+
+  useEffect(() => {
+    if (!adTimedOut) return;
+    if (shortCode) watchedAds.add(shortCode);
+    setPhase('result');
+  }, [adTimedOut, shortCode]);
 
   useEffect(() => {
     if (!shortCode) { navigate('/'); return; }
@@ -110,17 +117,6 @@ export default function ResultPage() {
         >
           {adLoaded ? '광고 보고 결과 확인하기 🎁' : '광고 준비 중...'}
         </button>
-        {adTimedOut && (
-          <button
-            style={{ marginTop: 16, fontSize: 13, color: '#bbb', background: 'none', border: 'none', cursor: 'pointer' }}
-            onClick={() => {
-              if (shortCode) watchedAds.add(shortCode);
-              setPhase('result');
-            }}
-          >
-            건너뛰기
-          </button>
-        )}
       </div>
     );
   }
