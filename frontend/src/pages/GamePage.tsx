@@ -66,6 +66,9 @@ export default function GamePage() {
 
   function handleSelect(choice: 'A' | 'B') {
     if (answers.has(questions[currentIndex].id)) return; // 이미 선택한 문제 재클릭 무시
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     const newAnswers = new Map(answers).set(questions[currentIndex].id, choice);
     setAnswers(newAnswers);
     setTimeout(() => {
@@ -142,6 +145,7 @@ export default function GamePage() {
       </div>
 
       <BalanceCard
+        key={currentQuestion.id}
         question={currentQuestion}
         currentIndex={currentIndex}
         total={questions.length}

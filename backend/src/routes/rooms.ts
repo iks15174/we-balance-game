@@ -197,6 +197,36 @@ router.get('/:shortCode', async (req, res) => {
 });
 
 // POST /api/rooms/:shortCode/answers — B유저 답변 제출
+router.get('/:shortCode/status', async (req, res) => {
+  try {
+    const room = await prisma.room.findUnique({
+      where: { shortCode: req.params.shortCode },
+      select: { shortCode: true, status: true, expiresAt: true },
+    });
+
+    if (!room) { res.status(404).json({ error: 'Room not found' }); return; }
+
+    const expired = new Date() > room.expiresAt;
+    if (expired) {
+      res.status(410).json({
+        shortCode: room.shortCode,
+        status: room.status,
+        expired: true,
+      });
+      return;
+    }
+
+    res.set('Cache-Control', 'private, max-age=2, stale-while-revalidate=8');
+    res.json({
+      shortCode: room.shortCode,
+      status: room.status,
+      expired: false,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/:shortCode/answers', async (req, res) => {
   const parsed = z.object({
     answers: z.array(AnswerSchema).min(1),

@@ -45,14 +45,25 @@ export default function WaitingPage() {
     async function check() {
       if (navigatedRef.current) return;
       try {
-        const room = await api.getRoom(shortCode!);
+        const room = await api.getRoomStatus(shortCode!);
+        if (room.expired) {
+          navigatedRef.current = true;
+          clearInterval(intervalRef.current!);
+          navigate('/', { replace: true });
+          return;
+        }
         if (room.status === 'COMPLETE') {
           navigatedRef.current = true;
           clearInterval(intervalRef.current!);
           // replace: true → 결과 화면에서 뒤로가기 시 WaitingPage로 돌아오지 않음
           navigate(`/result/${shortCode}`, { replace: true });
         }
-      } catch {
+      } catch (err: any) {
+        if (String(err?.message ?? '').includes('410')) {
+          navigatedRef.current = true;
+          clearInterval(intervalRef.current!);
+          navigate('/', { replace: true });
+        }
         // 에러 무시, 계속 폴링
       }
     }

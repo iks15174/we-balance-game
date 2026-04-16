@@ -1,19 +1,75 @@
-import { AnswerItem, CustomQuestion, GameResult, RoomInfo, MyRoom } from '../types';
+import { AnswerItem, CustomQuestion, GameResult, MyRoom, RoomInfo, RoomStatusInfo } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4001';
+const REQUEST_TIMEOUT_MS = 8000;
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${data.error ?? ''}`);
-  return data as T;
+type RequestOptions = RequestInit & {
+  cacheKey?: string;
+  cacheTtlMs?: number;
+};
+
+const responseCache = new Map<string, { expiresAt: number; value: unknown }>();
+const inflightRequests = new Map<string, Promise<unknown>>();
+
+async function request<T>(path: string, options?: RequestOptions): Promise<T> {
+  const method = options?.method ?? 'GET';
+  const cacheKey = options?.cacheKey;
+  const cacheTtlMs = options?.cacheTtlMs ?? 0;
+
+  if (cacheKey && method === 'GET') {
+    const cached = responseCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value as T;
+    }
+
+    const inflight = inflightRequests.get(cacheKey);
+    if (inflight) {
+      return inflight as Promise<T>;
+    }
+  }
+
+  const run = async () => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        headers: { 'Content-Type': 'application/json', ...options?.headers },
+        ...options,
+        signal: controller.signal,
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${data.error ?? ''}`);
+      }
+
+      if (cacheKey && method === 'GET' && cacheTtlMs > 0) {
+        responseCache.set(cacheKey, {
+          expiresAt: Date.now() + cacheTtlMs,
+          value: data,
+        });
+      }
+
+      return data as T;
+    } finally {
+      window.clearTimeout(timeout);
+      if (cacheKey) {
+        inflightRequests.delete(cacheKey);
+      }
+    }
+  };
+
+  if (cacheKey && method === 'GET') {
+    const promise = run();
+    inflightRequests.set(cacheKey, promise);
+    return promise;
+  }
+
+  return run();
 }
 
 export const api = {
-  // 로그인: authorizationCode + referrer → userKey
   authLogin(body: { authorizationCode: string; referrer: string }): Promise<{ userKey: string; name: string | null }> {
     return request('/api/auth/login', {
       method: 'POST',
@@ -21,12 +77,13 @@ export const api = {
     });
   },
 
-  // localStorage의 userKey가 아직 유효한지 확인
   authMe(userKey: string): Promise<{ valid: boolean }> {
-    return request(`/api/auth/me?userKey=${encodeURIComponent(userKey)}`);
+    return request(`/api/auth/me?userKey=${encodeURIComponent(userKey)}`, {
+      cacheKey: `auth-me:${userKey}`,
+      cacheTtlMs: 5 * 60 * 1000,
+    });
   },
 
-  // 일반 게임 방 생성 (A)
   createRoom(body: {
     topicId: string;
     questionIds: string[];
@@ -39,7 +96,6 @@ export const api = {
     });
   },
 
-  // 커스텀 게임 방 생성 (A)
   createCustomRoom(body: {
     customQuestions: CustomQuestion[];
     answers: AnswerItem[];
@@ -52,7 +108,14 @@ export const api = {
   },
 
   getRoom(shortCode: string): Promise<RoomInfo> {
-    return request(`/api/rooms/${shortCode}`);
+    return request(`/api/rooms/${shortCode}`, {
+      cacheKey: `room:${shortCode}`,
+      cacheTtlMs: 15 * 1000,
+    });
+  },
+
+  getRoomStatus(shortCode: string): Promise<RoomStatusInfo> {
+    return request(`/api/rooms/${shortCode}/status`);
   },
 
   submitBAnswers(shortCode: string, answers: AnswerItem[], userKey?: string): Promise<{ success: boolean }> {

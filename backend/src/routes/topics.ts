@@ -1,10 +1,8 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
-// GET /api/topics — 활성화된 테마 목록
 router.get('/', async (_req, res) => {
   try {
     const topics = await prisma.topic.findMany({
@@ -13,12 +11,11 @@ router.get('/', async (_req, res) => {
       select: { id: true, name: true, emoji: true, description: true, imageUrl: true, order: true },
     });
     res.json(topics);
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// GET /api/topics/:topicId/questions
 router.get('/:topicId/questions', async (req, res) => {
   try {
     const questions = await prisma.question.findMany({
@@ -31,7 +28,7 @@ router.get('/:topicId/questions', async (req, res) => {
       return;
     }
     res.json(questions);
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });

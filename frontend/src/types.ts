@@ -3,19 +3,22 @@ export interface AnswerItem {
   choice: 'A' | 'B';
 }
 
-// 서버 응답 타입
 export interface RoomInfo {
   roomId: string;
   shortCode: string;
   topicId: string | null;
   isCustom: boolean;
-  // 일반 게임: FE 로컬 룩업용 ID 배열
   questionIds: string[] | null;
-  // 커스텀 게임: 질문 내용 포함
   questionsSnapshot: CustomQuestion[] | null;
   status: 'WAITING_B' | 'COMPLETE';
   aCompleted: boolean;
   bCompleted: boolean;
+}
+
+export interface RoomStatusInfo {
+  shortCode: string;
+  status: 'WAITING_B' | 'COMPLETE';
+  expired: boolean;
 }
 
 export interface CustomQuestion {
@@ -25,7 +28,6 @@ export interface CustomQuestion {
   optionB: string;
 }
 
-// ResultDetail: 일반 게임은 text/optionA/optionB가 null → FE가 로컬 데이터로 보강
 export interface ResultDetail {
   questionId: string;
   text: string | null;

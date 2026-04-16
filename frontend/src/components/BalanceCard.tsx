@@ -26,6 +26,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
 
       <div style={styles.optionsWrap}>
         <button
+          type="button"
           style={{
             ...styles.optionBtn,
             ...(selected === 'A' ? styles.optionSelected : {}),
@@ -41,6 +42,7 @@ export default function BalanceCard({ question, currentIndex, total, selected, o
         </div>
 
         <button
+          type="button"
           style={{
             ...styles.optionBtn,
             ...(selected === 'B' ? styles.optionSelected : {}),
